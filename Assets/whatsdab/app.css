@@ -100,6 +100,22 @@ body {
 .brand {
   flex: 1;
   min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The app's own mark, lifted out of icon.png as a white silhouette. An <img> is sized by CSS alone - the layout
+   runs without Unity and cannot open a PNG to learn its intrinsic size - so both dimensions are required, and
+   they follow the glyph's own 172:174 rather than being guessed. `color` tints it, which is why one white file
+   works on the dark header and would work on a light bar too. */
+.mark {
+  width: 20px;
+  height: 20px;
+  color: #FFFFFF;
+}
+
+.brand-name {
   color: #FFFFFF;
   font-size: 17px;
   font-weight: 700;

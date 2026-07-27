@@ -192,7 +192,15 @@ namespace WhatsDab.Chat
 
             thread.Unread++;
             Revision++;
+
+            LastArrival = thread;
         }
+
+        /// <summary>
+        /// The thread a message most recently landed in, so the mod can decide whether it is worth a notification.
+        /// Cleared by whoever reads it - it is a one-shot signal, not a state.
+        /// </summary>
+        internal static Thread LastArrival;
 
         internal static void MarkRead(string threadId)
         {

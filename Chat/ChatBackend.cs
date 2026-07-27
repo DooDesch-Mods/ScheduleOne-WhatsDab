@@ -76,7 +76,35 @@ namespace WhatsDab.Chat
 
             // One event, no payload worth the name: the page decides what it needs and asks for it. Pushing the whole
             // state would mean serialising every thread on every keystroke-sized change.
-            _app?.Emit("chat.changed", ChatModel.TotalUnread().ToString());
+            int unread = ChatModel.TotalUnread();
+            _app?.Emit("chat.changed", unread.ToString());
+
+            // The badge is the count a player sees without opening anything, so it follows the same one number the
+            // app's own header shows. Set on every change rather than tracked: the framework remembers it across a
+            // phone rebuild, and re-setting the same value costs nothing.
+            _app?.Badge(unread);
+
+            NotifyIfUnseen();
+        }
+
+        /// <summary>
+        /// Interrupt the player only for a message they are not already watching arrive. WhatsDab being on screen is
+        /// enough to stay quiet: they are looking at the app, so the thread list showing a new row is the whole
+        /// notification. With the phone in their pocket, nothing else would tell them.
+        /// </summary>
+        private static void NotifyIfUnseen()
+        {
+            Thread arrived = ChatModel.LastArrival;
+            if (arrived == null) return;
+            ChatModel.LastArrival = null;
+
+            if (_app == null || _app.IsOnScreen) return;
+
+            Message last = arrived.Messages.Count > 0 ? arrived.Messages[arrived.Messages.Count - 1] : null;
+            if (last == null || last.Mine) return;
+
+            // The sender leads, because in a group the thread name says nothing about who wrote.
+            _app.Notify(arrived.Group ? $"{last.From} - {arrived.Name}" : last.From, last.Text);
         }
 
         /// <summary>
