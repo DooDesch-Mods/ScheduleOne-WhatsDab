@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>WhatsDab - Sideload preview</title>
+
+  <style>
+    /* Everything in this file is the PREVIEW SHELL, never the app. The app's own look comes entirely from app.css,
+       so anything styled here would be a lie about how it renders in the game. */
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #14161C;
+      color: #8A8F9E;
+      font: 13px/1.5 system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    /* The in-game phone panel measures 733 x 400 CSS pixels landscape, 400 x 733 portrait. Matching it exactly is
+       the whole point: a layout that fits here fits there. */
+    #viewport {
+      width: 733px;
+      height: 400px;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+      background: #FFFFFF;
+    }
+
+    /* Chrome evaluates `@media (orientation: ...)` against the WINDOW, not against an element, so the app's own
+       portrait rules fire when the window is taller than it is wide. The frame has to follow the same signal or the
+       preview would show the portrait layout inside a landscape box. Turn the browser window to switch. */
+    @media (orientation: portrait) {
+      #viewport { width: 400px; height: 733px; }
+    }
+
+    #viewport > * { height: 100%; }
+
+    footer { max-width: 733px; text-align: center; }
+    kbd { background: #232733; border-radius: 4px; padding: 1px 5px; color: #ECEDF1; }
+  </style>
+
+  <style>
+    /* --- Sideload compatibility layer -------------------------------------------------------------------------
+       The engine's defaults are not the browser's, and app.css is written against the engine. Without these three
+       rules the preview lies about every box on the page. Taken from Sideload/Css/ComputedStyle.cs:
+
+         display: flex           every box is a flex container, not a block
+         flex-direction: column  so children stack downwards, which is what makes it read like a block
+         box-sizing: border-box  width includes padding and border, everywhere, no exceptions
+
+       Everything else - flex-shrink: 1, align-items: stretch, justify-content: flex-start, position: static - is
+       already the browser's own default, so it needs no help.
+
+       Wrapped in :where() so these carry ZERO specificity. Written plainly, `#viewport *` would outrank every class
+       selector in app.css and the app's own `flex-direction: row` would never win. */
+    :where(#viewport, #viewport *) {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    /* The engine paints text leaves with TextMeshPro, which centres nothing by default and never draws a control
+       chrome. Strip the browser's, so a button and an input look like what the game will draw. */
+    :where(#viewport input, #viewport button) {
+      appearance: none;
+      border: none;
+      outline: none;
+      font: inherit;
+      display: block;
+    }
+  </style>
+
+  <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+  <div id="viewport">
+    <!-- The app's own markup, byte for byte what index.html ships, so the preview cannot drift from the real page. -->
+    <div class="app" id="app">
+
+      <aside class="sidebar">
+        <header class="side-head">
+          <div class="brand">WhatsDab</div>
+          <div class="badge" id="total">0</div>
+        </header>
+
+        <input class="search" id="search" placeholder="Search chats" maxlength="40">
+
+        <div class="threads" id="threads"></div>
+      </aside>
+
+      <main class="chat">
+        <header class="chat-head">
+          <button class="back" id="back" title="Back to chats">&lt;</button>
+          <div class="avatar" id="head-avatar">E</div>
+          <div class="who">
+            <div class="who-name" id="head-name">Everyone</div>
+            <div class="who-sub" id="head-sub">group chat</div>
+          </div>
+        </header>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="compose">
+          <input class="entry" id="entry" placeholder="Write a message" maxlength="500">
+          <button class="send" id="send">Send</button>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <footer>
+    733 x 400 CSS pixels, the size of the in-game phone panel. Chrome lays this out with its own engine, so the
+    preview proves the app's logic and roughly its look - never the exact pixels.
+    Edit <kbd>app.css</kbd> or <kbd>app.js</kbd> and reload.
+    Make the window taller than it is wide for the portrait layout - in the game the rotate keys do that.
+  </footer>
+
+  <!-- The host stand-in first, then the app exactly as the game loads it. -->
+  <script src="s1-mock.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

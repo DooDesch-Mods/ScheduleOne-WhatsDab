@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared release hardening: strip Release debug info + assembly identity, cuts AV false positives. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/Hardening.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/Hardening.props')" />
+
+  <!--
+    WhatsDab - a chat app for the in-game phone, and the first mod built on the Sideload UI framework. The whole
+    interface is index.html / app.css / app.js; this project is the game-side half.
+
+    Deliberately minimal as a project. It references NO Unity assembly, NO IL2CPP interop and NOT Sideload itself -
+    only MelonLoader plus the single-file Sideload.Api shim, which finds the host by reflection and is a no-op when
+    Sideload is not installed. Sideload is a hard requirement to USE the app and a soft one to load it: without it
+    the mod registers nothing and does nothing, rather than throwing.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>WhatsDab</RootNamespace>
+    <AssemblyName>WhatsDab</AssemblyName>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <NoWarn>$(NoWarn);MSB3277;MSB3245</NoWarn>
+
+    <WorkspaceLibPath Condition="'$(WorkspaceLibPath)' == ''">$(MSBuildThisFileDirectory)../Workspace/lib</WorkspaceLibPath>
+    <ModsDirectory Condition="'$(ModsDirectory)' == ''">$(MSBuildThisFileDirectory)../_MPTest/Schedule I/Mods</ModsDirectory>
+  </PropertyGroup>
+
+  <!-- On CI the build-libs repo is checked out into ./Workspace; keep that tree out of the default compile glob.
+       The explicit Sideload.Api include below comes after this and is therefore unaffected. -->
+  <ItemGroup>
+    <Compile Remove="Workspace/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/melonloader/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- The shim as SOURCE rather than as a second DLL: one file, one assembly to install, and it shows the
+       drop-in-a-file path the API documents. Referencing Sideload.Api.dll instead works identically.
+
+       Two locations for the same file. In the development monorepo the Sideload.Api project sits next to this one
+       and is the single source of truth. A standalone checkout of this repo (and therefore CI) has no sibling, so
+       it falls back to the copy that ships in the private build-libs repo under lib/sideload-api/. -->
+  <ItemGroup>
+    <Compile Condition="Exists('$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs')"
+             Include="$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs" Link="Sideload.Api.cs" />
+    <Compile Condition="!Exists('$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs') And Exists('$(WorkspaceLibPath)/sideload-api/Sideload.cs')"
+             Include="$(WorkspaceLibPath)/sideload-api/Sideload.cs" Link="Sideload.Api.cs" />
+  </ItemGroup>
+
+  <!-- The web bundle. The logical names decide the prefix passed to Apps.Register.
+       preview.html and s1-mock.js are authoring tools, not part of the app: they let the same files run in Chrome
+       without a game launch, and shipping them inside the DLL would be dead weight. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/whatsdab/*" Exclude="Assets/whatsdab/preview.html;Assets/whatsdab/s1-mock.js">
+      <LogicalName>WhatsDab.Assets.whatsdab.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Condition="Exists('$(ModsDirectory)')" Command="cmd /c if exist &quot;$(ModsDirectory)&quot; copy /Y &quot;$(TargetPath)&quot; &quot;$(ModsDirectory)&quot;" ContinueOnError="true" />
+  </Target>
+
+</Project>

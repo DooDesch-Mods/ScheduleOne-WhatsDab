@@ -1,0 +1,39 @@
+<link rel="stylesheet" href="app.css">
+
+<div class="app" id="app">
+
+  <aside class="sidebar">
+    <header class="side-head">
+      <div class="brand">WhatsDab</div>
+      <div class="badge" id="total">0</div>
+    </header>
+
+    <input class="search" id="search" placeholder="Search chats" maxlength="40">
+
+    <div class="threads" id="threads"></div>
+  </aside>
+
+  <main class="chat">
+    <header class="chat-head">
+      <!-- Only ever visible in portrait, where the two panes cannot both fit and the list has to be left behind.
+           Right-click does the same thing; this is the version you can see. Plain "<", not an arrow glyph: the
+           game's TMP atlases carry Latin text and little else, so U+2190 draws as an empty box. -->
+      <button class="back" id="back" title="Back to chats">&lt;</button>
+      <div class="avatar" id="head-avatar">E</div>
+      <div class="who">
+        <div class="who-name" id="head-name">Everyone</div>
+        <div class="who-sub" id="head-sub">group chat</div>
+      </div>
+    </header>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="compose">
+      <input class="entry" id="entry" placeholder="Write a message" maxlength="500">
+      <button class="send" id="send">Send</button>
+    </div>
+  </main>
+
+</div>
+
+<script src="app.js"></script>

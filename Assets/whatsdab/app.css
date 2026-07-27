@@ -1,0 +1,380 @@
+/* WhatsDab. The phone's native apps are light, so this one follows that language rather than the dark menu
+   design system - dark-green header, white lists, paper-tone thread, green own-bubbles.
+
+   Two layouts from one stylesheet. Landscape (733 x 400 CSS pixels) is a two-pane split: both panes fit side by
+   side and a message never costs you the contact list. Portrait (400 x 733) is push navigation, because two panes
+   in 400px are two columns too narrow to read. The @media block at the bottom is the whole difference; the script
+   only says which pane portrait is on. */
+
+:root {
+  --header:     #075E54;
+  --header-lit: #13766A;
+  --green:      #25D366;
+  --green-dark: #00A86B;
+
+  --screen:     #FCFCFC;
+  --paper:      #ECE5DD;
+  --text:       #111416;
+  --muted:      #667781;
+  --hairline:   #E9EDEF;
+
+  --mine:       #DCF8C6;
+  --theirs:     #FFFFFF;
+  --compose:    #F0F2F5;
+}
+
+body {
+  height: 100%;
+  font-family: game-ui;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.app {
+  flex-direction: row;
+  height: 100%;
+  background: var(--screen);
+}
+
+/* ---------------------------------------------------------------- sidebar -- */
+
+.sidebar {
+  width: 260px;
+  background: var(--screen);
+  border-right: 1px solid var(--hairline);
+}
+
+.side-head {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 14px;
+  background: var(--header);
+}
+
+/* flex: 1 rather than justify-content: space-between, so the badge stays pinned to the right edge whatever else
+   the header grows to hold. */
+.brand {
+  flex: 1;
+  min-width: 0;
+  color: #FFFFFF;
+  font-size: 17px;
+  font-weight: 700;
+  align-items: center;
+}
+
+.badge {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  background: var(--green);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  align-items: center;
+}
+
+/* An empty badge would still be a green dot, so script hides it by setting display: none. */
+.badge.empty { display: none; }
+
+.search {
+  height: 34px;
+  margin: 8px;
+  padding: 0 12px;
+  border-radius: 17px;
+  background: var(--compose);
+  border: 1px solid var(--compose);
+  color: var(--text);
+  font-size: 13px;
+  align-items: center;
+}
+
+.search:hover { border-color: #D6DBE1; }
+
+.threads {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.thread {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  height: 58px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--screen);
+}
+
+.thread:hover  { background: #F2F5F7; }
+.thread:active { background: #E7ECEF; }
+.thread.on     { background: #E9EDEF; }
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 19px;
+  background: var(--green-dark);
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  align-items: center;
+}
+
+.thread-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.thread-top {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.thread-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.thread-time {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.thread-preview {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.thread.unread .thread-name,
+.thread.unread .thread-preview { color: var(--text); font-weight: 600; }
+
+.thread.unread .thread-time { color: var(--green-dark); }
+
+/* Someone typing replaces the preview. Green and italic so it reads as live rather than as a short message -
+   and it wins over the unread rule above because it comes later at the same specificity. */
+.thread .thread-preview.typing-now,
+.thread.unread .thread-preview.typing-now {
+  color: var(--green-dark);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.pill {
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--green);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------------- chat -- */
+
+.chat {
+  flex: 1;
+  min-width: 0;
+  background: var(--paper);
+}
+
+.chat-head {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 14px;
+  background: var(--header);
+}
+
+.chat-head .avatar { background: var(--header-lit); }
+
+.who { flex: 1; }
+
+.who-name {
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.who-sub {
+  color: #B6D6D0;
+  font-size: 11px;
+}
+
+.messages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 10px 14px;
+  gap: 4px;
+}
+
+.day {
+  align-self: center;
+  margin: 6px 0;
+  padding: 3px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* A bubble hugs its text. align-self stops the column from stretching it to full width, and max-width is what
+   makes a long message wrap instead of running to the far edge. */
+.bubble {
+  align-self: flex-start;
+  max-width: 74%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--theirs);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.bubble.mine {
+  align-self: flex-end;
+  background: var(--mine);
+}
+
+.sender {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.body { font-size: 13px; }
+
+.meta {
+  align-self: flex-end;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.typing {
+  align-self: flex-start;
+  margin: 2px 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.empty {
+  align-self: center;
+  margin: 24px 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Sender tints. Assigned by the script from a hash of the name, so one person keeps one colour. */
+.c0 { color: #C0392B; } .c1 { color: #2980B9; } .c2 { color: #27AE60; }
+.c3 { color: #8E44AD; } .c4 { color: #D35400; } .c5 { color: #16808D; }
+
+.a0 { background: #C0392B; } .a1 { background: #2980B9; } .a2 { background: #27AE60; }
+.a3 { background: #8E44AD; } .a4 { background: #D35400; } .a5 { background: #16808D; }
+
+/* ---------------------------------------------------------------- compose -- */
+
+.compose {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 10px;
+  background: var(--compose);
+}
+
+.entry {
+  flex: 1;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid #FFFFFF;
+  color: var(--text);
+  font-size: 13px;
+  align-items: center;
+}
+
+.entry:hover { border-color: #CBD5DC; }
+
+.send {
+  width: 74px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--green);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  align-items: center;
+}
+
+.send:hover    { background: #34E074; }
+.send:active   { background: #1BA750; }
+.send:disabled { background: #C7D0D5; color: #EEF2F4; }
+
+/* ------------------------------------------------------- header controls -- */
+
+/* Sits on the dark green bar, one character wide, so it wants to be round. */
+.back {
+  width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  align-items: center;
+}
+
+.back:hover  { background: rgba(255, 255, 255, 0.28); }
+.back:active { background: rgba(255, 255, 255, 0.40); }
+
+/* Landscape shows both panes at once, so there is nothing to go back to. */
+.back { display: none; }
+
+/* ------------------------------------------------------------- portrait -- */
+/*
+   400 x 733 CSS pixels instead of 733 x 400. Two panes side by side stop being a layout and become two columns
+   too narrow to read, so portrait is push navigation: the list, then the conversation, with a back arrow. The
+   script only sets `.on-chat`; everything below is what that class means.
+*/
+@media (orientation: portrait) {
+  .app { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    border-right: none;
+  }
+
+  .chat { display: none; }
+
+  .app.on-chat .sidebar { display: none; }
+  .app.on-chat .chat    { display: flex; }
+
+  .back { display: flex; }
+
+  /* Taller rows and a bigger avatar: in portrait the list is the whole screen, not a 260px column. */
+  .thread { height: 66px; }
+  .avatar { width: 44px; height: 44px; border-radius: 22px; font-size: 18px; }
+
+  /* A bubble may take most of the width here - there is no second pane competing for it. */
+  .bubble { max-width: 86%; }
+}

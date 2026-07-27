@@ -1,0 +1,239 @@
+name: Build and Release on Tag
+
+# Push a tag "vX.Y.Z" (matching <Version> in WhatsDab.csproj) and this builds Release, publishes a
+# GitHub Release, and uploads to Thunderstore + Nexus. Mirrors the Siesta pipeline.
+#
+# One-time setup:
+#   - Private build-libs repo  ${owner}/ScheduleOne-Workspace  must contain:
+#       lib/il2cpp/melonloader  (MelonLoader.dll - the only assembly this mod references)
+#       lib/sideload-api        (Sideload.cs - the single-file modder shim, compiled in as source)
+#     In the development monorepo the shim is taken from the sibling Sideload.Api/ folder instead; the csproj
+#     picks whichever exists, so a standalone checkout like this one builds from the Workspace copy.
+#   - Secrets: WORKSPACE_TOKEN (SSH deploy key for that repo), THUNDERSTORE_TOKEN, NEXUSMODS_API_KEY.
+#   - Repo/org variable NEXUS_FILE_GROUP_ID = the Nexus mod's file group id (the Nexus upload job is skipped
+#     until this is set, so GitHub + Thunderstore releases work immediately).
+#   - thunderstore/icon.png must be exactly 256x256 (Thunderstore requirement).
+#
+# This mod ships a single DLL: the web bundle is embedded in it and the shim is compiled into it, so the
+# archives stay flat and there is no UserLibs payload (unlike Sideload itself).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version-check.outputs.version }}
+      notes: ${{ steps.changelog.outputs.notes }}
+      notes_bbcode: ${{ steps.changelog.outputs.notes_bbcode }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout Workspace repository (build libs)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/ScheduleOne-Workspace
+          path: Workspace
+          ssh-key: ${{ secrets.WORKSPACE_TOKEN }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Verify version in csproj matches the tag
+        id: version-check
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          CS_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" WhatsDab.csproj)
+          if [ "$TAG_VERSION" != "$CS_VERSION" ]; then
+            echo "Version mismatch: Tag version is $TAG_VERSION, but csproj version is $CS_VERSION"
+            exit 1
+          fi
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Extract release notes from CHANGELOG.md
+        id: changelog
+        run: |
+          # Single source of truth is the hand-maintained CHANGELOG.md. Pull out the section for
+          # this version; it is reused for the GitHub release body and the Nexus file description.
+          VERSION="${{ steps.version-check.outputs.version }}"
+          SECTION=$(awk -v v="$VERSION" 'index($0,"## ["v"]")==1{grab=1;next} index($0,"## [")==1{if(grab)exit} grab{print}' CHANGELOG.md)
+          if [ -z "$SECTION" ]; then
+            echo "::warning::No CHANGELOG.md section found for $VERSION"
+            SECTION="See CHANGELOG.md for details."
+          fi
+          # Markdown notes - GitHub renders Markdown in release bodies.
+          {
+            echo "notes<<CHANGELOG_EOF"
+            echo "$SECTION"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+          # Nexus file descriptions use BBCode, not Markdown. Convert "### Heading" to [b]Heading[/b],
+          # "- item" bullets to [list]/[*], drop inline-code backticks, and join wrapped bullet lines.
+          BBCODE=$(printf '%s\n' "$SECTION" | awk '
+            function flush(){ if(buf!=""){ printf "[*]%s\n", buf; buf="" } }
+            BEGIN{ inlist=0; buf="" }
+            {
+              line=$0; gsub(/`/,"",line); sub(/[ \t]+$/,"",line)
+              if (line ~ /^### /){ flush(); if(inlist){print "[/list]"; inlist=0} h=line; sub(/^### /,"",h); printf "[b]%s[/b]\n", h; next }
+              if (line ~ /^- /){ flush(); if(!inlist){print "[list]"; inlist=1} buf=line; sub(/^- /,"",buf); next }
+              if (line ~ /^[ \t]*$/){ next }
+              sub(/^[ \t]+/,"",line); if(buf!="") buf=buf " " line; else printf "%s\n", line
+            }
+            END{ flush(); if(inlist) print "[/list]" }')
+          {
+            echo "notes_bbcode<<CHANGELOG_EOF"
+            echo "$BBCODE"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build the project (Release, IL2CPP)
+        run: dotnet build WhatsDab.csproj --configuration Release /p:WorkspaceLibPath="${{ github.workspace }}/Workspace/lib"
+
+      - name: Prepare release directory
+        run: |
+          mkdir -p release
+          cp bin/Release/net6.0/WhatsDab.dll release/
+          if [ -d "thunderstore" ]; then
+            cp -r thunderstore/* release/ 2>/dev/null || true
+            if [ -f "release/manifest.json" ]; then
+              sed -i "s/\"version_number\": \".*\"/\"version_number\": \"${{ steps.version-check.outputs.version }}\"/" release/manifest.json
+            fi
+          fi
+          # Ship LICENSE + the maintained CHANGELOG inside the package.
+          [ -f "LICENSE.md" ] && cp LICENSE.md release/ || true
+          [ -f "CHANGELOG.md" ] && cp CHANGELOG.md release/ || true
+          # Recreate README.md as UTF-8 without BOM (Thunderstore renders it on the mod page).
+          if [ -f "thunderstore/README.md" ]; then
+            cat thunderstore/README.md | iconv -f UTF-8 -t UTF-8//IGNORE > release/README.md 2>/dev/null || \
+            sed '1s/^\xEF\xBB\xBF//' thunderstore/README.md > release/README.md || \
+            cp thunderstore/README.md release/README.md
+          fi
+
+      - name: Create release ZIP (Thunderstore + GitHub; flat layout with manifest/icon at root)
+        run: zip -j "WhatsDab_${{ steps.version-check.outputs.version }}.zip" release/*
+
+      - name: Upload Release ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhatsDab
+          path: "WhatsDab_${{ steps.version-check.outputs.version }}.zip"
+
+      # Nexus is installed through Vortex, whose Schedule 1 extension deploys relative to the game root and
+      # maps loose non-.md files at the archive root (manifest.json, icon.png) to a bare "mods" path - which
+      # lands a FILE named "mods" in the game folder, replacing the real Mods DIRECTORY and wiping other mods.
+      # So Nexus gets its own archive: the DLL under a mods/ folder, and none of the Thunderstore-only files.
+      - name: Create Nexus/Vortex ZIP (payload under mods/ so the Schedule 1 Vortex extension installs cleanly)
+        run: |
+          mkdir -p nexus/mods
+          cp release/WhatsDab.dll nexus/mods/
+          for f in README.md CHANGELOG.md LICENSE.md; do
+            [ -f "release/$f" ] && cp "release/$f" nexus/ || true
+          done
+          (cd nexus && zip -r "../WhatsDab_${{ steps.version-check.outputs.version }}_nexus.zip" .)
+
+      - name: Upload Nexus ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhatsDab-nexus
+          path: "WhatsDab_${{ steps.version-check.outputs.version }}_nexus.zip"
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download built ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: WhatsDab
+
+      - name: Extract DLL from ZIP
+        run: |
+          unzip -q "WhatsDab_${{ needs.build.outputs.version }}.zip" -d release/
+          ls -la release/
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/WhatsDab.dll
+          body: |
+            ## Changes in ${{ needs.build.outputs.version }}
+
+            ${{ needs.build.outputs.notes }}
+
+            Needs [Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload) installed.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  thunderstore:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download built ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: WhatsDab
+
+      - name: Extract ZIP for Thunderstore
+        run: |
+          mkdir -p thunderstore-package
+          unzip -q "WhatsDab_${{ needs.build.outputs.version }}.zip" -d thunderstore-package/
+
+      - name: Upload to Thunderstore
+        uses: GreenTF/upload-thunderstore-package@v4.3
+        with:
+          token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          community: schedule-i
+          repo: thunderstore.io
+          namespace: DooDesch
+          name: WhatsDab
+          description: WhatsDab, the reference app for the Sideload UI framework. A full chat client on the in game phone, written as three web files.
+          version: ${{ needs.build.outputs.version }}
+          path: thunderstore-package
+          deps: |
+            LavaGang-MelonLoader-0.7.3
+            DooDesch-Sideload-1.0.0
+          categories: |
+            Mods
+
+  nexus:
+    needs: build
+    runs-on: ubuntu-latest
+    # Skipped until the Nexus mod page exists and its file group id is set as the repo/org variable.
+    if: ${{ vars.NEXUS_FILE_GROUP_ID != '' }}
+    steps:
+      - name: Download Nexus ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: WhatsDab-nexus
+
+      - name: Upload to Nexus Mods
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.9
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: ${{ vars.NEXUS_FILE_GROUP_ID }}
+          filename: "WhatsDab_${{ needs.build.outputs.version }}_nexus.zip"
+          version: ${{ needs.build.outputs.version }}
+          display_name: "WhatsDab ${{ needs.build.outputs.version }}"
+          description: ${{ needs.build.outputs.notes_bbcode }}
+          category: main
+          archive_existing_version: true
+          update_mod_version: true
+          primary_mod_manager_download: true
+          allow_mod_manager_download: true
