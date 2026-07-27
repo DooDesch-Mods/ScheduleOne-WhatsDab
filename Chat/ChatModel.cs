@@ -51,6 +51,37 @@ namespace WhatsDab.Chat
         /// <summary>Bumped on every change, so the page can ignore an event that tells it nothing new.</summary>
         internal static int Revision { get; private set; }
 
+        /// <summary>
+        /// Whether there is anyone to talk to at all. A chat app with no transport behind it is not an empty chat app,
+        /// it is a different screen - so this is state the page has to be able to read, not something it infers from
+        /// an empty thread list.
+        ///
+        /// The demo has no transport and is therefore always online. A real one reports whether the local player is in
+        /// a lobby.
+        /// </summary>
+        internal static bool Online { get; private set; } = true;
+
+        /// <summary>How many other people are reachable. One thread per person, so this is the thread list minus the
+        /// group - but the page is told the number rather than counting rows, because "nobody else is here" is a fact
+        /// about the lobby and not about how many rows survived a search filter.</summary>
+        internal static int Peers
+        {
+            get
+            {
+                int peers = 0;
+                foreach (Thread thread in _threads) if (!thread.Group) peers++;
+                return peers;
+            }
+        }
+
+        internal static void SetOnline(bool online)
+        {
+            if (Online == online) return;
+
+            Online = online;
+            Revision++;
+        }
+
         /// <summary>Thread whose contact is currently "typing", or null. Purely cosmetic and purely local.</summary>
         internal static string TypingIn { get; private set; }
 
@@ -66,9 +97,12 @@ namespace WhatsDab.Chat
             _threads.Clear();
 
             // A seeded model is a FRESH model: transient state and the scripted reply cursor go with the data, or a
-            // reload leaves a typing indicator pointing at a thread that no longer exists.
+            // reload leaves a typing indicator pointing at a thread that no longer exists. Connectivity is part of
+            // that - seeding four conversations while the model still claims to be offline would draw the offline
+            // screen over data that is demonstrably there.
             TypingIn = null;
             _replyIndex = 0;
+            Online = true;
 
             var everyone = new Thread { Id = GroupId, Name = "Everyone", Group = true };
             Add(everyone, "Mick", "anyone seen my van keys", -46);

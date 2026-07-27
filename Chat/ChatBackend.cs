@@ -4,13 +4,21 @@ namespace WhatsDab.Chat
 {
     /// <summary>
     /// Everything the page can ask for, and everything the mod pushes at it. This is the entire seam between C# and
-    /// the interface: five calls in, two events out, JSON strings both ways.
+    /// the interface: six calls in, one event out, JSON strings both ways.
     ///
     /// Nothing here knows what the app looks like. That is the property worth having - the layout can be rewritten in
-    /// app.css without recompiling, and this file would not notice.
+    /// app.css without recompiling, and this file would not notice. It also means every user-facing WORD lives in the
+    /// page: this side reports that there are no peers, never that "you're the only one here so far".
     /// </summary>
     internal static class ChatBackend
     {
+        /// <summary>
+        /// Longest message the wire may carry. The compose field declares the same number as its maxlength, so a
+        /// player cannot type past it; this is the guard for everything else, because the web bundle can be replaced
+        /// wholesale from the Mods folder and a handler that trusts its caller is not a guard at all.
+        /// </summary>
+        internal const int MaxMessageChars = 500;
+
         private static AppHandle _app;
         private static int _pushedRevision = -1;
 
@@ -35,7 +43,8 @@ namespace WhatsDab.Chat
                .OnCall("chat.thread", Conversation)
                .OnCall("chat.send", Send)
                .OnCall("chat.read", id => { ChatModel.MarkRead(id); return "ok"; })
-               .OnCall("chat.self", _ => ChatModel.Self);
+               .OnCall("chat.self", _ => ChatModel.Self)
+               .OnCall("chat.status", _ => Status());
         }
 
         /// <summary>Called once a frame by the mod. Drives the scripted replies and tells the page when to refresh -
@@ -70,6 +79,20 @@ namespace WhatsDab.Chat
             _app?.Emit("chat.changed", ChatModel.TotalUnread().ToString());
         }
 
+        /// <summary>
+        /// Whether chatting is possible at all, and with how many people.
+        ///
+        /// A real transport must answer <c>online: false</c> whenever the local player is not in a lobby - that is the
+        /// whole difference between "no messages yet" and "there is nobody to message", and only the transport knows
+        /// which one it is. <c>peers</c> is the number of OTHER lobby members, excluding the local player, so a
+        /// freshly hosted lobby reports zero.
+        /// </summary>
+        internal static string Status() =>
+            Json.Object()
+                .Add("online", ChatModel.Online)
+                .Add("peers", ChatModel.Peers)
+                .Close();
+
         internal static string Threads()
         {
             Json list = Json.Array();
@@ -86,7 +109,10 @@ namespace WhatsDab.Chat
                     // Whether someone is typing belongs in the list too, not just in the open conversation: it is the
                     // reason to switch threads, and you cannot see it from inside a different one.
                     .Add("typing", string.Equals(ChatModel.TypingIn, thread.Id, StringComparison.OrdinalIgnoreCase))
-                    .Add("preview", last == null ? "No messages yet"
+                    // Empty means empty. What a conversation nobody has spoken in should SAY is a different question
+                    // for a group than for one person, and the answer is a sentence - so the page owns it and this
+                    // side just declines to invent one.
+                    .Add("preview", last == null ? ""
                                                 : (last.Mine ? "You: " : thread.Group ? last.From + ": " : "") + last.Text)
                     .Add("time", last == null ? "" : ChatModel.Clock(last.At)));
             }
@@ -138,6 +164,12 @@ namespace WhatsDab.Chat
         /// </summary>
         internal static string Send(string argument)
         {
+            // Nothing goes out without a transport. The page hides the compose bar behind the offline screen, so this
+            // is unreachable from the shipped interface - which is exactly why it belongs here: the interface is a
+            // folder of web files anybody can replace, and a handler that relies on its caller having hidden a button
+            // is relying on the one part of the app that is not under its control.
+            if (!ChatModel.Online) return "error";
+
             string raw = argument ?? "";
 
             int split = raw.IndexOf('\n');
@@ -148,6 +180,10 @@ namespace WhatsDab.Chat
 
             if (text.IndexOf('\n') >= 0) return "error";         // the wire format cannot carry it
             if (string.IsNullOrWhiteSpace(text)) return "error";
+
+            // Refused rather than truncated. Cutting a message in half and sending it anyway loses words the player
+            // wrote and cannot get back; refusing leaves the text in the compose field, where they can still edit it.
+            if (text.Trim().Length > MaxMessageChars) return "error";
 
             Thread thread = ChatModel.Find(id);
             if (thread == null) return "error";

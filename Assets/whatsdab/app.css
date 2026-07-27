@@ -36,6 +36,48 @@ body {
   background: var(--screen);
 }
 
+/* ---------------------------------------------------------------- offline -- */
+
+/* One screen replacing both panes, for when the mod reports no transport. It takes the whole viewport in either
+   orientation rather than living inside one of the panes, because there is no other pane to sit next to.
+
+   The state class on the root is `on-offline`, not `offline`: the root and this section would otherwise answer to the
+   same name, and the `display: none` below would hide the entire app the moment the state went on. */
+.offline { display: none; }
+
+.app.on-offline .sidebar,
+.app.on-offline .chat { display: none; }
+
+.app.on-offline .offline {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+/* The message sits in the middle of what is left under the title bar: centred on both axes, which in a column box is
+   align-items across and justify-content along. min-height: 0 is what lets it give the bar its 52px first. */
+.offline-body {
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 28px;
+}
+
+.offline-title {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.offline-text {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 /* ---------------------------------------------------------------- sidebar -- */
 
 .sidebar {
@@ -198,8 +240,6 @@ body {
   background: var(--header);
 }
 
-.chat-head .avatar { background: var(--header-lit); }
-
 .who { flex: 1; }
 
 .who-name {
@@ -279,12 +319,18 @@ body {
   text-align: center;
 }
 
-/* Sender tints. Assigned by the script from a hash of the name, so one person keeps one colour. */
+/* Sender tints. Assigned by the script from a hash of the name, so one person keeps one colour - in the thread list,
+   in the conversation header and above every bubble they wrote. That consistency is the point: the colour is how you
+   recognise who is speaking before you have read the name. */
 .c0 { color: #C0392B; } .c1 { color: #2980B9; } .c2 { color: #27AE60; }
 .c3 { color: #8E44AD; } .c4 { color: #D35400; } .c5 { color: #16808D; }
 
 .a0 { background: #C0392B; } .a1 { background: #2980B9; } .a2 { background: #27AE60; }
 .a3 { background: #8E44AD; } .a4 { background: #D35400; } .a5 { background: #16808D; }
+
+/* The group is not a person, so it is deliberately outside the six-colour rotation rather than borrowing one of
+   them - two identities sharing a colour is exactly the confusion the tints exist to prevent. */
+.a-group { background: var(--green-dark); }
 
 /* ---------------------------------------------------------------- compose -- */
 

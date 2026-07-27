@@ -1,6 +1,6 @@
 // WhatsDab. The whole interface: pick a thread, read it, write into it.
 //
-// The mod behind this never touches a widget. It answers five calls and raises one event; everything below decides
+// The mod behind this never touches a widget. It answers six calls and raises one event; everything below decides
 // what that means on screen. Rewriting the layout is an edit to app.css and a reload, not a rebuild.
 //
 // Sideload runs Jint with every feature enabled, so this is ordinary modern JavaScript - classes with private
@@ -16,6 +16,16 @@ const tint = (name = '') => {
 };
 
 const initial = (name) => (name?.trim()?.[0] ?? '?').toUpperCase();
+
+/**
+ * Shorten a name that would otherwise decide how wide a bubble is. A bubble is sized by its widest line, so an
+ * unusually long persona name above a two-word message stretches the bubble across the conversation for no reason.
+ *
+ * The dots are part of the budget, not added on top of it - a clamp that returns more characters than it was asked
+ * for is not a clamp. Three dots rather than the ellipsis character: the game's TMP atlases stop at Latin-1, so
+ * U+2026 draws as an empty box.
+ */
+const clamp = (text, max) => (text.length <= max ? text : `${text.slice(0, max - 3).trimEnd()}...`);
 
 /** Build an element in one expression - the shape almost every line below needs. */
 const el = (tag, className, text) => {
@@ -46,6 +56,13 @@ class Chat {
 
   get self() { return s1.call('chat.self'); }
 
+  /**
+   * Whether there is a transport at all, and how many other people are on it. A missing answer counts as online with
+   * an unknown number of peers: hiding somebody's conversations because one call came back empty is the worse of the
+   * two failures, and a made-up peer count would put a "nobody else is here" notice on a lobby that is full.
+   */
+  get status() { return this.#call('chat.status') ?? { online: true, peers: -1 }; }
+
   thread(id) { return this.#call('chat.thread', id); }
 
   read(id) { s1.call('chat.read', id); }
@@ -62,6 +79,24 @@ class WhatsDab {
 
   /** Portrait only: the two panes cannot both fit, so one of them is on screen at a time. */
   #pane = 'list';
+
+  /** Set while the mod reports no transport, and then nothing else is on screen. */
+  #offline = false;
+
+  /**
+   * How many other people are reachable, as of the last render. Kept on the instance rather than passed down, because
+   * the search box redraws the list on its own without going through render() - and a keystroke must not be able to
+   * make "you're the only one here" appear or vanish. Starts unknown rather than zero, so the notice cannot flash up
+   * before the mod has been asked anything.
+   */
+  #peers = -1;
+
+  /**
+   * What the conversation looked like the last time it was pinned to its newest message: which thread, and how many
+   * messages were in it. Re-pinning on every render would drag the player back down mid-scroll every time anything at
+   * all changed - a search keystroke, an unread badge, someone starting to type in a different thread.
+   */
+  #pinned = null;
 
   #app = $('app');
   #threads = $('threads');
@@ -88,9 +123,10 @@ class WhatsDab {
     // lets the app close, so the branch below is the whole contract.
     //
     // Landscape shows both panes, so there is nothing to step back FROM and the press must close the app - without
-    // the orientation check it would silently switch a pane nobody can see and the app would stop closing.
+    // the orientation check it would silently switch a pane nobody can see and the app would stop closing. The
+    // offline screen is the same case: it replaces both panes, so there is no list underneath it to return to.
     document.addEventListener('back', (e) => {
-      if (s1.orientation !== 'portrait' || this.#pane !== 'chat') return;
+      if (this.#offline || s1.orientation !== 'portrait' || this.#pane !== 'chat') return;
       e.preventDefault();
       this.#show('list');
     });
@@ -105,7 +141,6 @@ class WhatsDab {
     // Raised by the mod whenever anything changed: a reply arrived, a message was confirmed, someone started typing.
     s1.on('chat.changed', () => this.render());
 
-    this.#chat.read(this.#current);
     this.#show(this.#pane);
     this.render();
     console.log('WhatsDab ready for', this.#chat.self, 'in', s1.orientation);
@@ -114,14 +149,41 @@ class WhatsDab {
   /** Which pane portrait shows. Landscape ignores the class entirely and shows both. */
   #show(pane) {
     this.#pane = pane;
-    this.#app.className = pane === 'chat' ? 'app on-chat' : 'app';
+    this.#paint();
   }
 
+  /** The app's whole visual state in one attribute: which pane portrait is on, and whether there is a chat at all. */
+  #paint() {
+    this.#app.className = this.#offline
+      ? 'app on-offline'
+      : this.#pane === 'chat' ? 'app on-chat' : 'app';
+  }
+
+  /**
+   * Is the conversation actually in front of the player? Landscape always has it on screen; portrait only while the
+   * chat pane is pushed. It is the difference between reading a message and merely having the app open, and the old
+   * WhatsDab drew the same line - a message that arrives while you are looking at the thread list is unread.
+   */
+  #watching() { return !this.#offline && (s1.orientation !== 'portrait' || this.#pane === 'chat'); }
+
   render() {
+    const { online, peers } = this.#chat.status;
+    const offline = !online;
+
+    if (offline !== this.#offline) {
+      this.#offline = offline;
+      this.#paint();
+    }
+
+    // Nothing behind the offline screen is on show, so nothing behind it is worth asking the mod about.
+    if (this.#offline) return;
+
+    this.#peers = peers;
+
     // Reading a conversation you are looking at is what "read" means. Without this the badge on the open thread
     // keeps climbing while you are actively replying in it, which is the one place a chat must never nag.
     // MarkRead only raises an event when something really changed, so this settles after one extra render.
-    this.#chat.read(this.#current);
+    if (this.#watching()) this.#chat.read(this.#current);
 
     this.#renderThreads();
     this.#renderThread();
@@ -129,9 +191,21 @@ class WhatsDab {
 
   // ------------------------------------------------------------------ sidebar --
 
-  #matches({ name, preview }) {
+  /**
+   * What a row says under the name. The mod sends an empty preview for a conversation nobody has spoken in and leaves
+   * the sentence to the page, because what an empty thread means differs by kind: the group is where everyone is, a
+   * private thread is one person. Searching matches this text rather than the raw preview, so what you can see and
+   * what you can find are the same thing.
+   */
+  #preview({ group, preview }) {
+    return preview || (group ? 'Everyone in the lobby' : 'Private chat');
+  }
+
+  #matches(thread) {
     const needle = this.#filter.toLowerCase();
-    return !needle || name.toLowerCase().includes(needle) || preview.toLowerCase().includes(needle);
+    if (!needle) return true;
+
+    return thread.name.toLowerCase().includes(needle) || this.#preview(thread).toLowerCase().includes(needle);
   }
 
   #renderThreads() {
@@ -140,9 +214,11 @@ class WhatsDab {
 
     this.#threads.replaceChildren();
 
-    for (const { id, name, group, unread, preview, time, typing } of shown) {
+    for (const thread of shown) {
+      const { id, name, group, unread, time, typing } = thread;
+
       const row = el('div', ['thread', unread > 0 && 'unread', id === this.#current && 'on'].filter(Boolean).join(' '));
-      row.appendChild(el('div', `avatar ${group ? 'a2' : `a${tint(name)}`}`, initial(name)));
+      row.appendChild(el('div', `avatar ${group ? 'a-group' : `a${tint(name)}`}`, initial(name)));
 
       const body = el('div', 'thread-body');
       const top = el('div', 'thread-top');
@@ -153,7 +229,7 @@ class WhatsDab {
       // Someone typing outranks the last message: it is the reason to open this thread rather than read it later.
       body.appendChild(typing
         ? el('div', 'thread-preview typing-now', 'typing...')
-        : el('div', 'thread-preview', preview));
+        : el('div', 'thread-preview', this.#preview(thread)));
       row.appendChild(body);
 
       if (unread > 0) row.appendChild(el('div', 'pill', unread > 99 ? '99+' : unread));
@@ -164,7 +240,13 @@ class WhatsDab {
       this.#threads.appendChild(row);
     }
 
-    if (shown.length === 0) this.#threads.appendChild(el('div', 'empty', `Nothing matches "${this.#filter}"`));
+    if (shown.length === 0) {
+      this.#threads.appendChild(el('div', 'empty', `Nothing matches "${this.#filter}"`));
+    } else if (this.#peers === 0 && !this.#filter) {
+      // A lobby of one still has a group thread, so the list is not empty - it is just pointless, and saying nothing
+      // leaves the player wondering whether their friends failed to show up or the app failed to list them.
+      this.#threads.appendChild(el('div', 'empty', "You're the only one here so far."));
+    }
 
     const total = threads.reduce((sum, t) => sum + t.unread, 0);
     this.#total.textContent = total > 99 ? '99+' : String(total);
@@ -179,7 +261,7 @@ class WhatsDab {
 
     const avatar = $('head-avatar');
     avatar.textContent = initial(thread.name);
-    avatar.className = 'avatar';
+    avatar.className = `avatar ${thread.group ? 'a-group' : `a${tint(thread.name)}`}`;
 
     $('head-name').textContent = thread.name;
     $('head-sub').textContent = thread.typing ? 'typing...' : (thread.group ? 'group chat' : 'online');
@@ -189,6 +271,7 @@ class WhatsDab {
     const items = thread.messages ?? [];
     if (items.length === 0) {
       this.#messages.appendChild(el('div', 'empty', 'No messages yet. Say something.'));
+      this.#pin(thread.id, 0);
       return;
     }
 
@@ -196,9 +279,25 @@ class WhatsDab {
       this.#messages.appendChild(item.kind === 'day' ? el('div', 'day', item.text) : this.#bubble(thread, item));
     }
 
-    if (thread.typing) this.#messages.appendChild(el('div', 'typing', `${thread.name} is typing...`));
+    if (thread.typing) this.#messages.appendChild(el('div', 'typing', `${clamp(thread.name, 24)} is typing...`));
 
-    // The newest message is the one you want to see, every time.
+    this.#pin(thread.id, items.length);
+  }
+
+  /**
+   * Jump to the newest message, but only when there is a newer one to jump to. The host keeps a box's scroll offset
+   * across a rebuild, so doing nothing leaves the player exactly where they were reading - which is what somebody
+   * scrolled halfway up a conversation wants, and what the old WhatsDab achieved by checking whether they were
+   * already at the bottom. That check is not available here (a page cannot read a scroll offset), so the test is
+   * "did this conversation actually gain something", which is the case that has to win.
+   *
+   * The typing row is deliberately not counted. It appears and disappears on its own schedule, and yanking somebody
+   * down to watch a "typing..." line is the version of this feature nobody asked for.
+   */
+  #pin(id, count) {
+    if (this.#pinned?.id === id && this.#pinned.count === count) return;
+
+    this.#pinned = { id, count };
     this.#messages.scrollToEnd();
   }
 
@@ -206,7 +305,7 @@ class WhatsDab {
     const bubble = el('div', mine ? 'bubble mine' : 'bubble');
 
     // The sender line only earns its space in a group chat, and never above your own messages.
-    if (thread.group && !mine) bubble.appendChild(el('div', `sender c${tint(from)}`, from));
+    if (thread.group && !mine) bubble.appendChild(el('div', `sender c${tint(from)}`, clamp(from, 24)));
 
     bubble.appendChild(el('div', 'body', text));
 

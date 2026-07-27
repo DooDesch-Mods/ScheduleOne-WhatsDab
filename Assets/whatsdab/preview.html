@@ -83,6 +83,17 @@
     <!-- The app's own markup, byte for byte what index.html ships, so the preview cannot drift from the real page. -->
     <div class="app" id="app">
 
+      <section class="offline">
+        <header class="side-head">
+          <div class="brand">WhatsDab</div>
+        </header>
+        <div class="offline-body">
+          <div class="offline-title">Nobody to message yet</div>
+          <div class="offline-text">Chat is available while you're in a lobby.</div>
+          <div class="offline-text">Host or join one from the main menu.</div>
+        </div>
+      </section>
+
       <aside class="sidebar">
         <header class="side-head">
           <div class="brand">WhatsDab</div>
@@ -120,6 +131,8 @@
     preview proves the app's logic and roughly its look - never the exact pixels.
     Edit <kbd>app.css</kbd> or <kbd>app.js</kbd> and reload.
     Make the window taller than it is wide for the portrait layout - in the game the rotate keys do that.
+    The two states the browser cannot reach on its own are console calls:
+    <kbd>s1mock.setOnline(false)</kbd> and <kbd>s1mock.emptyLobby()</kbd>.
   </footer>
 
   <!-- The host stand-in first, then the app exactly as the game loads it. -->

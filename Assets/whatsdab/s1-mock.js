@@ -51,6 +51,7 @@
 
   let replyIndex = 0;
   let typingIn = null;
+  let online = true;
   let orientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
   const listeners = {};
 
@@ -111,13 +112,16 @@
     call(name, argument = '') {
       switch (name) {
         case 'chat.self': return 'You';
+        case 'chat.status':
+          return JSON.stringify({ online, peers: threads.filter((t) => !t.group).length });
         case 'chat.threads':
           return JSON.stringify(threads.map((t) => {
             const last = t.messages.at(-1);
             return {
               id: t.id, name: t.name, group: t.group, unread: t.unread,
               typing: typingIn === t.id,
-              preview: last ? `${last.mine ? 'You: ' : t.group ? `${last.from}: ` : ''}${last.text}` : 'No messages yet',
+              // Empty stays empty, exactly as the mod leaves it: what an unused thread should say is the page's call.
+              preview: last ? `${last.mine ? 'You: ' : t.group ? `${last.from}: ` : ''}${last.text}` : '',
               time: last ? clock(last.at) : '',
             };
           }));
@@ -154,6 +158,14 @@
       set: (key, value) => localStorage.setItem(`sideload:${key}`, value),
       remove: (key) => localStorage.removeItem(`sideload:${key}`),
     },
+  };
+
+  // The states the game reaches by itself and a browser cannot: the transport going away, and the lobby emptying out.
+  // Without a handle on them the offline screen and the lobby-of-one note are the two parts of the app that can only
+  // be looked at in the game, which is the trip the preview exists to avoid. Call them from the Chrome console.
+  window.s1mock = {
+    setOnline(value) { online = !!value; changed(); },
+    emptyLobby() { threads.length = 1; changed(); },
   };
 
   // The one DOM method the host adds and a browser does not have.
