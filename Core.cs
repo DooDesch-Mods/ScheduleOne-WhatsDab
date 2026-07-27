@@ -2,7 +2,7 @@ using MelonLoader;
 using Sideload.Api;
 using WhatsDab.Chat;
 
-[assembly: MelonInfo(typeof(WhatsDab.Core), "WhatsDab", "1.0.0", "DooDesch")]
+[assembly: MelonInfo(typeof(WhatsDab.Core), "WhatsDab", "1.0.0", "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab")]
 [assembly: MelonGame("TVGS", "Schedule I")]
 
 namespace WhatsDab
