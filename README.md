@@ -116,7 +116,7 @@ stack.
 |-----------|------------------|
 | Schedule I | IL2CPP (current Steam public build) |
 | MelonLoader | `0.7.3+` |
-| [Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload) | `1.0.0+` - the framework that renders the app |
+| [Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload) | `1.0.1+` - the framework that renders the app |
 
 ## Installation
 

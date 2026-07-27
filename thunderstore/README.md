@@ -53,7 +53,7 @@ Guide, the exact CSS subset and the layout rules that differ from a browser:
 ## Requirements
 
 **Schedule I** (IL2CPP) with **MelonLoader 0.7.3+** and
-**[Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/) 1.0.0+** (pulled in as a dependency).
+**[Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/) 1.0.1+** (pulled in as a dependency).
 
 ## Settings
 

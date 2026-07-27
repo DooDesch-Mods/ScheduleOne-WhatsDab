@@ -17,6 +17,9 @@ const tint = (name = '') => {
 
 const initial = (name) => (name?.trim()?.[0] ?? '?').toUpperCase();
 
+/** The one conversation that is always there, whoever else is in the lobby. */
+const GROUP = 'everyone';
+
 /**
  * Shorten a name that would otherwise decide how wide a bubble is. A bubble is sized by its widest line, so an
  * unusually long persona name above a two-word message stretches the bubble across the conversation for no reason.
@@ -74,7 +77,7 @@ class Chat {
 /** The app: what is on screen, and what to do when it changes. */
 class WhatsDab {
   #chat = new Chat();
-  #current = s1.storage.get('thread', 'everyone');
+  #current = s1.storage.get('thread', GROUP);
   #filter = '';
 
   /** Portrait only: the two panes cannot both fit, so one of them is on screen at a time. */
@@ -256,8 +259,25 @@ class WhatsDab {
   // ------------------------------------------------------------------- thread --
 
   #renderThread() {
-    const thread = this.#chat.thread(this.#current);
-    if (!thread?.id) return;
+    let thread = this.#chat.thread(this.#current);
+
+    // The stored conversation can be gone: thread ids are the people you were in a lobby with, and the next lobby
+    // has different people. Falling back to the group is the only answer that always exists - without it the header
+    // keeps its markup, the pane stays blank, and the app looks broken until you happen to click a row.
+    if (!thread?.id && this.#current !== GROUP) {
+      this.#current = GROUP;
+      s1.storage.set('thread', GROUP);
+      thread = this.#chat.thread(GROUP);
+    }
+
+    if (!thread?.id) {
+      $('head-avatar').textContent = '';
+      $('head-avatar').className = 'avatar a-group';
+      $('head-name').textContent = '';
+      $('head-sub').textContent = '';
+      this.#messages.replaceChildren();
+      return;
+    }
 
     const avatar = $('head-avatar');
     avatar.textContent = initial(thread.name);

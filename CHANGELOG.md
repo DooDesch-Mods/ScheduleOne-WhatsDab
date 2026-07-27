@@ -3,6 +3,17 @@
 All notable changes to WhatsDab are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-07-27
+
+### Fixed
+
+- Opening the app could show a conversation header with nothing under it. WhatsDab reopens whichever thread you
+  last read, and thread ids are the people you were in a lobby with - so the next lobby has different people and
+  the stored id resolves to nothing. It now falls back to the group chat, which always exists, and the header no
+  longer carries placeholder markup that made the empty pane look like a rendering failure.
+- Notifications are back for the case that matters: a message arriving with the phone closed. Needs Sideload
+  1.0.1, where the underlying check was fixed.
+
 ## [1.0.0] - 2026-07-27
 
 First release, alongside Sideload 1.0.0. WhatsDab is the reference app: a complete chat client for the in

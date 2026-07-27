@@ -208,7 +208,7 @@ jobs:
           path: thunderstore-package
           deps: |
             LavaGang-MelonLoader-0.7.3
-            DooDesch-Sideload-1.0.0
+            DooDesch-Sideload-1.0.1
           categories: |
             Mods
 
