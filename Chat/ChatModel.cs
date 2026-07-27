@@ -105,27 +105,27 @@ namespace WhatsDab.Chat
             Online = true;
 
             var everyone = new Thread { Id = GroupId, Name = "Everyone", Group = true };
-            Add(everyone, "Mick", "anyone seen my van keys", -46);
-            Add(everyone, "Jessi", "they were in the ignition. again.", -44);
-            Add(everyone, "Benji", "we are meeting at the docks at nine", -12);
+            Add(everyone, "coolpaca", "anyone seen my van keys", -46);
+            Add(everyone, "wesconsin", "they were in the ignition. again.", -44);
+            Add(everyone, "SirTidez", "meeting at the docks at nine, bring the van", -12);
             everyone.Unread = 1;
             _threads.Add(everyone);
 
-            var mick = new Thread { Id = "mick", Name = "Mick Lubbin" };
-            Add(mick, "Mick Lubbin", "got the package?", -180);
-            Add(mick, Self, "yeah, dropped it off an hour ago", -176, mine: true);
-            Add(mick, "Mick Lubbin", "you are a legend", -175);
-            _threads.Add(mick);
+            var tidez = new Thread { Id = "tidez", Name = "SirTidez" };
+            Add(tidez, "SirTidez", "you at the warehouse?", -180);
+            Add(tidez, Self, "on my way, five minutes", -176, mine: true);
+            Add(tidez, "SirTidez", "nice, door is open", -175);
+            _threads.Add(tidez);
 
-            var jessi = new Thread { Id = "jessi", Name = "Jessi Waters", Unread = 2 };
-            Add(jessi, "Jessi Waters", "that new strain is unreal", -9);
-            Add(jessi, "Jessi Waters", "customers are asking for it by name now", -8);
-            _threads.Add(jessi);
+            var bars = new Thread { Id = "bars", Name = "Bars", Unread = 2 };
+            Add(bars, "Bars", "we are two short for tonight", -9);
+            Add(bars, "Bars", "can you bring someone?", -8);
+            _threads.Add(bars);
 
-            var benji = new Thread { Id = "benji", Name = "Benji Coleman" };
-            Add(benji, Self, "warehouse is full, we need a second one", -320, mine: true);
-            Add(benji, "Benji Coleman", "i know a guy who knows a guy", -318);
-            _threads.Add(benji);
+            var eternidox = new Thread { Id = "eternidox", Name = "Eternidox" };
+            Add(eternidox, Self, "storage is full, we need a second place", -320, mine: true);
+            Add(eternidox, "Eternidox", "i know a guy who knows a guy", -318);
+            _threads.Add(eternidox);
 
             Revision++;
         }
@@ -161,8 +161,8 @@ namespace WhatsDab.Chat
 
         /// <summary>
         /// Mark a contact as typing. The id is canonicalised through <see cref="Find"/> first: every other lookup is
-        /// case-insensitive, and storing the caller's spelling would make `SetTyping("JESSI")` invisible to a
-        /// conversation that compares against `"jessi"`.
+        /// case-insensitive, and storing the caller's spelling would make `SetTyping("BARS")` invisible to a
+        /// conversation that compares against `"bars"`.
         /// </summary>
         internal static void SetTyping(string threadId)
         {
@@ -182,7 +182,7 @@ namespace WhatsDab.Chat
 
             TypingIn = null;
 
-            string author = thread.Group ? "Benji Coleman" : thread.Name;
+            string author = thread.Group ? "SirTidez" : thread.Name;
             thread.Messages.Add(new Message
             {
                 From = author,

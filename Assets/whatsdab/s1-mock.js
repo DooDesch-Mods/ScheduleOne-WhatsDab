@@ -23,22 +23,22 @@
 
   const threads = [
     { id: 'everyone', name: 'Everyone', group: true, unread: 1, messages: [
-      msg('Mick', 'anyone seen my van keys', 46),
-      msg('Jessi', 'they were in the ignition. again.', 44),
-      msg('Benji', 'we are meeting at the docks at nine', 12),
+      msg('coolpaca', 'anyone seen my van keys', 46),
+      msg('wesconsin', 'they were in the ignition. again.', 44),
+      msg('SirTidez', 'meeting at the docks at nine, bring the van', 12),
     ]},
-    { id: 'mick', name: 'Mick Lubbin', group: false, unread: 0, messages: [
-      msg('Mick Lubbin', 'got the package?', 180),
-      msg('You', 'yeah, dropped it off an hour ago', 176, true),
-      msg('Mick Lubbin', 'you are a legend', 175),
+    { id: 'tidez', name: 'SirTidez', group: false, unread: 0, messages: [
+      msg('SirTidez', 'you at the warehouse?', 180),
+      msg('You', 'on my way, five minutes', 176, true),
+      msg('SirTidez', 'nice, door is open', 175),
     ]},
-    { id: 'jessi', name: 'Jessi Waters', group: false, unread: 2, messages: [
-      msg('Jessi Waters', 'that new strain is unreal', 9),
-      msg('Jessi Waters', 'customers are asking for it by name now', 8),
+    { id: 'bars', name: 'Bars', group: false, unread: 2, messages: [
+      msg('Bars', 'we are two short for tonight', 9),
+      msg('Bars', 'can you bring someone?', 8),
     ]},
-    { id: 'benji', name: 'Benji Coleman', group: false, unread: 0, messages: [
-      msg('You', 'warehouse is full, we need a second one', 320, true),
-      msg('Benji Coleman', 'i know a guy who knows a guy', 318, true),
+    { id: 'eternidox', name: 'Eternidox', group: false, unread: 0, messages: [
+      msg('You', 'storage is full, we need a second place', 320, true),
+      msg('Eternidox', 'i know a guy who knows a guy', 318, true),
     ]},
   ];
 
