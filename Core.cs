@@ -11,9 +11,9 @@ namespace WhatsDab
     /// The whole mod. Registering the app is one call; after that the interface lives in
     /// Assets/whatsdab/{index.html, app.css, app.js} and this file only supplies data.
     ///
-    /// Note what is NOT here: no Unity type, no uGUI, no layout arithmetic, no reference to Sideload itself. If
-    /// Sideload is not installed the shim binds nothing and every call below is a no-op, so this mod can be shipped
-    /// with a soft dependency rather than a hard one.
+    /// Note what is NOT here: no uGUI, no layout arithmetic, no reference to Sideload itself. If Sideload is not
+    /// installed the shim binds nothing and every call below is a no-op, so the mod loads rather than throwing -
+    /// it just has no app. Using it needs Sideload, which is why the package lists it as a dependency.
     /// </summary>
     public class Core : MelonMod
     {
@@ -33,11 +33,29 @@ namespace WhatsDab
                 // turn is in app.css - see the @media block there.
                 .Orientation("landscape", "portrait");
 
-            ChatBackend.Install(app);
+            ChatBackend.Install(app, ChooseSource());
 
             Log.Msg(Apps.Available
                 ? "[WhatsDab] registered with Sideload."
                 : "[WhatsDab] Sideload is not loaded yet - registration is queued and replays when it appears.");
+        }
+
+        /// <summary>
+        /// Real conversations in a shipped build, always. A development build gets the scripted demo instead, so the
+        /// whole interface - layouts, unread counting, notifications - is exercisable from a single-player save
+        /// rather than needing a second machine in a lobby.
+        ///
+        /// Chosen once at init rather than per frame. Switching source under a running app would mean the player
+        /// watching one conversation turn into a different one.
+        /// </summary>
+        private static IChatSource ChooseSource()
+        {
+#if DEBUG
+            Log.Msg("[WhatsDab] development build - using the scripted demo conversation, not the lobby.");
+            return new DemoSource();
+#else
+            return new Lobby.LobbySource();
+#endif
         }
 
         public override void OnUpdate() => ChatBackend.Tick();

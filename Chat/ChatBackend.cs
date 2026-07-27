@@ -20,63 +20,50 @@ namespace WhatsDab.Chat
         internal const int MaxMessageChars = 500;
 
         private static AppHandle _app;
+        private static IChatSource _source;
         private static int _pushedRevision = -1;
 
-        // The demo's "other side": a contact starts typing shortly after you send, and answers shortly after that.
-        private static DateTime _confirmAt = DateTime.MaxValue;
-        private static DateTime _typingAt = DateTime.MaxValue;
-        private static DateTime _replyAt = DateTime.MaxValue;
-        private static string _replyTo;
+        /// <summary>Where the conversations come from. The real one carries messages between players; the demo makes
+        /// the app worth opening with no lobby running. Both answer exactly the calls below.</summary>
+        internal static IChatSource Source => _source;
 
-        internal static void Install(AppHandle app)
+        /// <summary>
+        /// Point the handlers at a source. Separate from <see cref="Install"/> because the headless tests exercise
+        /// the handlers directly and have no app to register them on - the seam under test is the source, not the
+        /// registration.
+        /// </summary>
+        internal static void UseSource(IChatSource source)
+        {
+            _source = source;
+            _pushedRevision = -1;
+        }
+
+        internal static void Install(AppHandle app, IChatSource source)
         {
             _app = app;
-            ChatModel.Seed();
-
-            // Install means "start over". A reply left scheduled from a previous install would fire into the fresh
-            // model and put a message into a conversation nobody sent one to.
-            _confirmAt = _typingAt = _replyAt = DateTime.MaxValue;
-            _replyTo = null;
-            _pushedRevision = -1;
+            UseSource(source);
 
             app.OnCall("chat.threads", _ => Threads())
                .OnCall("chat.thread", Conversation)
                .OnCall("chat.send", Send)
-               .OnCall("chat.read", id => { ChatModel.MarkRead(id); return "ok"; })
-               .OnCall("chat.self", _ => ChatModel.Self)
+               .OnCall("chat.read", id => { _source.MarkRead(id); return "ok"; })
+               .OnCall("chat.self", _ => _source.Self)
                .OnCall("chat.status", _ => Status());
         }
 
-        /// <summary>Called once a frame by the mod. Drives the scripted replies and tells the page when to refresh -
-        /// on a revision change only, so an idle app costs one integer comparison.</summary>
+        /// <summary>Called once a frame by the mod. Advances the source and tells the page when to refresh - on a
+        /// revision change only, so an idle app costs one integer comparison.</summary>
         internal static void Tick()
         {
-            DateTime now = DateTime.Now;
+            if (_source == null) return;
+            _source.Tick();
 
-            if (now >= _confirmAt)
-            {
-                _confirmAt = DateTime.MaxValue;
-                ChatModel.ConfirmPending();
-            }
-
-            if (now >= _typingAt)
-            {
-                _typingAt = DateTime.MaxValue;
-                ChatModel.SetTyping(_replyTo);
-            }
-
-            if (now >= _replyAt)
-            {
-                _replyAt = DateTime.MaxValue;
-                ChatModel.Reply(_replyTo);
-            }
-
-            if (ChatModel.Revision == _pushedRevision) return;
-            _pushedRevision = ChatModel.Revision;
+            if (_source.Revision == _pushedRevision) return;
+            _pushedRevision = _source.Revision;
 
             // One event, no payload worth the name: the page decides what it needs and asks for it. Pushing the whole
             // state would mean serialising every thread on every keystroke-sized change.
-            int unread = ChatModel.TotalUnread();
+            int unread = _source.TotalUnread();
             _app?.Emit("chat.changed", unread.ToString());
 
             // The badge is the count a player sees without opening anything, so it follows the same one number the
@@ -94,9 +81,8 @@ namespace WhatsDab.Chat
         /// </summary>
         private static void NotifyIfUnseen()
         {
-            Thread arrived = ChatModel.LastArrival;
+            Thread arrived = _source.TakeArrival();
             if (arrived == null) return;
-            ChatModel.LastArrival = null;
 
             if (_app == null || _app.IsOnScreen) return;
 
@@ -117,15 +103,15 @@ namespace WhatsDab.Chat
         /// </summary>
         internal static string Status() =>
             Json.Object()
-                .Add("online", ChatModel.Online)
-                .Add("peers", ChatModel.Peers)
+                .Add("online", _source.Online)
+                .Add("peers", _source.Peers)
                 .Close();
 
         internal static string Threads()
         {
             Json list = Json.Array();
 
-            foreach (Thread thread in ChatModel.Threads)
+            foreach (Thread thread in _source.Threads)
             {
                 Message last = thread.Messages.Count > 0 ? thread.Messages[thread.Messages.Count - 1] : null;
 
@@ -136,7 +122,7 @@ namespace WhatsDab.Chat
                     .Add("unread", thread.Unread)
                     // Whether someone is typing belongs in the list too, not just in the open conversation: it is the
                     // reason to switch threads, and you cannot see it from inside a different one.
-                    .Add("typing", string.Equals(ChatModel.TypingIn, thread.Id, StringComparison.OrdinalIgnoreCase))
+                    .Add("typing", string.Equals(_source.TypingIn, thread.Id, StringComparison.OrdinalIgnoreCase))
                     // Empty means empty. What a conversation nobody has spoken in should SAY is a different question
                     // for a group than for one person, and the answer is a sentence - so the page owns it and this
                     // side just declines to invent one.
@@ -150,7 +136,7 @@ namespace WhatsDab.Chat
 
         internal static string Conversation(string id)
         {
-            Thread thread = ChatModel.Find(id);
+            Thread thread = _source.Find(id);
             if (thread == null) return Json.Object().Add("id", "").Add("name", "").Close();
 
             Json messages = Json.Array();
@@ -180,7 +166,7 @@ namespace WhatsDab.Chat
                 .Add("id", thread.Id)
                 .Add("name", thread.Name)
                 .Add("group", thread.Group)
-                .Add("typing", string.Equals(ChatModel.TypingIn, thread.Id, StringComparison.OrdinalIgnoreCase))
+                .Add("typing", string.Equals(_source.TypingIn, thread.Id, StringComparison.OrdinalIgnoreCase))
                 .Add("messages", messages)
                 .Close();
         }
@@ -196,7 +182,7 @@ namespace WhatsDab.Chat
             // is unreachable from the shipped interface - which is exactly why it belongs here: the interface is a
             // folder of web files anybody can replace, and a handler that relies on its caller having hidden a button
             // is relying on the one part of the app that is not under its control.
-            if (!ChatModel.Online) return "error";
+            if (!_source.Online) return "error";
 
             string raw = argument ?? "";
 
@@ -213,20 +199,13 @@ namespace WhatsDab.Chat
             // wrote and cannot get back; refusing leaves the text in the compose field, where they can still edit it.
             if (text.Trim().Length > MaxMessageChars) return "error";
 
-            Thread thread = ChatModel.Find(id);
+            Thread thread = _source.Find(id);
             if (thread == null) return "error";
 
-            ChatModel.Send(thread.Id, text);
-
-            // A real transport confirms when the wire says so; here a short delay stands in for the round trip, which
-            // is what makes the pending tick visible at all. Scheduled against the CANONICAL id, so a differently
-            // cased request still answers into the same conversation.
-            _confirmAt = DateTime.Now.AddSeconds(0.9);
-            _typingAt = DateTime.Now.AddSeconds(1.8);
-            _replyAt = DateTime.Now.AddSeconds(4.0);
-            _replyTo = thread.Id;
-
-            return "ok";
+            // The CANONICAL id, so a differently cased request still lands in the same conversation. A refusal here
+            // is the transport saying no - rate limited, or the lobby gone since the page last asked - and the page
+            // keeps the words in the field rather than losing them.
+            return _source.Send(thread.Id, text) ? "ok" : "error";
         }
     }
 }

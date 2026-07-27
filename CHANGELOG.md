@@ -22,8 +22,12 @@ somebody else can build with the framework without knowing its internals.
 - **Right-click goes back**, exactly as it does in the vanilla Messages app: out of a conversation first,
   and only from the list does it close WhatsDab. Two lines in `app.js`, on Sideload's cancellable `back`
   event, and the visible `<` button in the portrait header does the same thing.
-- A scripted other side: a contact starts typing shortly after you send and answers shortly after that, so
-  the app is alive without a lobby. All data is in memory; nothing is saved and nothing leaves the machine.
+- **Real messages between players**, over the Steam lobby chat the game already uses for its own control
+  traffic. No FishNet, and nothing from any other mod - a lobby is a lobby, however it was opened. Messages
+  are session-only and in memory; nothing is written to your save. One-to-one is filter-level privacy: the
+  bytes reach every member and non-recipients drop them, which is the honest description of game chat.
+- A scripted other side in development builds: a contact starts typing shortly after you send and answers
+  shortly after that, so the whole app is exercisable from a single-player save.
 - The whole mod as a worked example. `Core.cs` is one `Apps.Register` call plus data.
   `Chat/ChatBackend.cs` is the entire seam to the interface, five calls in and one event out, JSON strings
   both ways. `Chat/ChatModel.cs` is the only file holding sample data, so swapping in a real transport

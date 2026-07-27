@@ -60,9 +60,16 @@ bubble's width, line count and height from text measurements. In CSS the same bu
 ```
 WhatsDab/
   Core.cs                 MelonMod: one Register call, then only data
+  Chat/IChatSource.cs     where conversations come from - the seam between the two halves below
+  Chat/ChatBackend.cs     the ENTIRE seam to the interface: 6 calls in, 1 event out
+  Chat/DemoSource.cs      the scripted conversation, so the app works with no lobby running
   Chat/ChatModel.cs       threads, messages, unread counts, all in memory
-  Chat/ChatBackend.cs     the ENTIRE seam to the interface: 5 calls in, 1 event out
   Chat/Json.cs            a tiny JSON writer (no parser needed on the C# side)
+  Lobby/LobbySource.cs    the real one: everyone in your Steam lobby
+  Lobby/ChatTransport.cs  send and receive over Steam lobby chat
+  Lobby/ChatEnvelope.cs   the wire format
+  Lobby/ChatStore.cs      conversations, unread counts, echo reconciliation
+  Lobby/Contacts.cs       lobby members, resolved to display names
   Assets/whatsdab/        index.html, app.css, app.js, icon.png - the app itself
 ```
 

@@ -7,10 +7,14 @@
     WhatsDab - a chat app for the in-game phone, and the first mod built on the Sideload UI framework. The whole
     interface is index.html / app.css / app.js; this project is the game-side half.
 
-    Deliberately minimal as a project. It references NO Unity assembly, NO IL2CPP interop and NOT Sideload itself -
-    only MelonLoader plus the single-file Sideload.Api shim, which finds the host by reflection and is a no-op when
-    Sideload is not installed. Sideload is a hard requirement to USE the app and a soft one to load it: without it
-    the mod registers nothing and does nothing, rather than throwing.
+    Split in two on purpose. Chat/ is the app's own logic and references NO engine assembly at all, which is what
+    lets the headless suite compile it in a second and catch an accidental dependency before a game launch. Lobby/
+    is the Steam transport that carries messages between players and needs the game; the two meet at IChatSource
+    and nowhere else.
+
+    Sideload itself is never referenced - only the single-file Sideload.Api shim, which finds the host by reflection.
+    It is a hard requirement to USE the app and a soft one to load it: without it the mod registers nothing and does
+    nothing, rather than throwing.
   -->
 
   <PropertyGroup>
@@ -40,6 +44,47 @@
   <ItemGroup>
     <Reference Include="MelonLoader">
       <HintPath>$(WorkspaceLibPath)/il2cpp/melonloader/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!--
+    Game references, needed ONLY by Lobby/ - the Steam lobby transport that carries messages between players.
+
+    Chat/ deliberately stays free of them, which is what lets the headless suite compile that folder without an
+    engine and catch an accidental dependency in a second rather than in a game launch. The two halves meet at
+    IChatSource and nowhere else.
+  -->
+  <ItemGroup>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/melonloader/Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/game/Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/game/Il2CppSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/game/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- The Steamworks wrapper. Named after the upstream package, not after its namespace, which is
+         Il2CppSteamworks. -->
+    <Reference Include="Il2Cppcom.rlabrecque.steamworks.net">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/game/Il2Cppcom.rlabrecque.steamworks.net.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Player derives from FishNet's NetworkBehaviour, which Contacts.cs touches when resolving a display name. -->
+    <Reference Include="Il2CppFishNet.Runtime">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/game/Il2CppFishNet.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(WorkspaceLibPath)/il2cpp/game/UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
