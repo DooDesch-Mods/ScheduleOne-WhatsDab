@@ -203,7 +203,7 @@ jobs:
           repo: thunderstore.io
           namespace: DooDesch
           name: WhatsDab
-          description: WhatsDab, the reference app for the Sideload UI framework. A full chat client on the in game phone, written as three web files.
+          description: Text the people in your lobby from the in game phone. Threads, unread counts, group and one to one chat, in both orientations. Needs Sideload.
           version: ${{ needs.build.outputs.version }}
           path: thunderstore-package
           deps: |

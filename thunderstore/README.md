@@ -2,9 +2,10 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/whatsdab](https://support.doodesch.de/whatsdab).
 
-> **A chat app on the in game phone, written as three web files.** WhatsDab exists to show what
-> [Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/) does: install it to see the
-> framework working, read its source to copy the pattern into your own mod.
+> **Text the people in your lobby from the phone you already carry.** Threads, unread counts, group and one
+> to one chat, in both orientations. Written as three web files on
+> [Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/), which is also the mod to read if you
+> want to build your own phone app.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
@@ -15,12 +16,17 @@
 
 ## Players
 
-WhatsDab shows up as its own app on the in game phone: a contact list and a conversation side by side, a
-search filter, unread counts, coloured avatars, day separators, timestamps, a delivery tick, a typing
-indicator and a send bar. The other side answers on a script, so it is alive without a lobby.
+WhatsDab shows up as its own app on the in game phone and texts the people actually in your Steam lobby. One
+thread per player plus a group thread, with a contact list and the conversation side by side, a search
+filter, unread counts, coloured avatars, day separators, timestamps, a delivery tick, a typing indicator and
+a send bar. Turn the phone with the game's own rotate keys and it switches to portrait, one pane at a time.
 
-The messages are made up and live only in memory. Nothing is saved, nothing is sent anywhere, nothing
-touches your game. It is a demo, and it is safe to remove at any time.
+Any lobby works - plain co-op, one a gamemode opened, one from the main menu. It rides the same Steam lobby
+chat the game already uses, so there is no server and no other mod needed. Everyone in the lobby needs
+WhatsDab to take part.
+
+Conversations stay in memory for the session and are never written to disk. Leave the lobby and they are
+gone. It is safe to remove at any time.
 
 ## Mod authors
 
@@ -35,8 +41,8 @@ Assets/whatsdab/        the app
 ```
 
 The same screen exists as hand built uGUI elsewhere: 781 lines of C# there against 518 lines of HTML, CSS
-and JavaScript here, with more features. The difference is not the count, it is that one of them computes a
-chat bubble's height from text measurements and the other writes `align-self` and `max-width`.
+and JavaScript here, with more features. What the lines hold matters more than how many: one version computes
+a chat bubble's height from text measurements, the other writes `align-self` and `max-width`.
 
 Any file under `Mods/whatsdab/` overrides the copy embedded in the DLL, so you can edit the app without
 rebuilding. `preview.html` in the source tree runs the shipped app in Chrome without launching the game.

@@ -19,11 +19,15 @@
 
 ## What you get
 
-WhatsDab appears on the in game phone as its own app. It is a working chat client with a contact list and a
-conversation side by side, a search filter, unread counts per thread and in total, coloured avatars, day
-separators, bubbles with the sender's name in groups, timestamps, a delivery tick, a typing indicator in
-both the conversation and the contact list, and a send bar. The other side answers on a script, so the app
-is alive without a lobby.
+WhatsDab appears on the in game phone as its own app, and it texts the people actually in your Steam lobby.
+One thread per player plus a group thread for everyone, with a contact list and the conversation side by
+side, a search filter, unread counts per thread and in total, coloured avatars, day separators, bubbles with
+the sender's name in groups, timestamps, a delivery tick, a typing indicator in both the conversation and
+the contact list, and a send bar.
+
+Any lobby works - plain co-op, one a gamemode opened, one from the main menu. It rides the same Steam lobby
+chat the game already uses for its own messages, so there is no server, no FishNet and no other mod in the
+way. Side Hustle is not required.
 
 The phone turns with the game's own rotate keys - the app has no button for it, and the key strip at the
 bottom left says which key. Landscape keeps the two panes side by side; portrait switches to push
@@ -33,8 +37,13 @@ portrait)` block in `app.css`, not a second layout.
 Right-click goes back the way it does everywhere else on the phone: out of a conversation first, and only
 from the list does it close the app.
 
-The messages are made up and stay in memory. Nothing is saved, nothing is sent anywhere, nothing touches
-your game. It is a demo you can play with and a codebase you can lift.
+Conversations live in memory for the session and are deliberately never written to disk: a chat log on
+someone's drive is not what people expect from a lobby chat, and the name shown is whatever a player already
+goes by in game, so a privacy mod that renames them is respected here too. Leave the lobby and the
+conversations are gone.
+
+A development build swaps the lobby for a scripted conversation, so the whole interface is exercisable from
+a single player save without a second machine.
 
 ## Why it exists
 
@@ -51,8 +60,8 @@ The same screen exists in Side Hustle as hand built uGUI, which makes the compar
 | Logic + data | 489 lines of C# | 475 lines of C# |
 | Changing the layout | rebuild, restart the game | save the file |
 
-The line count is not the point. What is in the lines is: the uGUI version spends 60 lines computing a chat
-bubble's width, line count and height from text measurements. In CSS the same bubble is `align-self`,
+What sits in those lines matters more than how many there are: the uGUI version spends 60 of them computing
+a chat bubble's width, line count and height from text measurements. In CSS the same bubble is `align-self`,
 `max-width` and `padding`.
 
 ## Layout of the mod
@@ -73,8 +82,10 @@ WhatsDab/
   Assets/whatsdab/        index.html, app.css, app.js, icon.png - the app itself
 ```
 
-`ChatModel` is deliberately the only file holding sample data. Swapping it for a real transport leaves
-`ChatBackend` and the entire interface untouched.
+The two halves meet at `IChatSource`, and that seam has already paid off once: the lobby transport was added
+under it without `ChatBackend` or a single line of the interface changing. `Chat/` compiles without any game
+reference, which is what lets the headless suite run the page's JavaScript against the real handlers in a
+second.
 
 `Assets/whatsdab/` also carries `preview.html` and `s1-mock.js`. Those two are authoring tools, not part of
 the app: open `preview.html` in Chrome and the shipped `app.js` and `app.css` run in a 733x400 frame without
@@ -137,7 +148,9 @@ is also the mechanism players use to reskin an app.
 ## Compatibility
 
 - IL2CPP build only (current Steam public branch).
-- Client local. It adds nothing to the world and nothing that travels between players.
+- Nothing is added to the world and nothing is written to a save. What does travel between players is chat
+  text, over the Steam lobby's own chat channel - so everyone in the lobby needs WhatsDab to take part, and
+  players without it are unaffected.
 - Without Sideload installed the shim binds nothing, every call is a no op and the mod simply does nothing
   rather than throwing.
 
