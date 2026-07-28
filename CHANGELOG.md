@@ -3,6 +3,14 @@
 All notable changes to WhatsDab are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-07-28
+
+### Fixed
+
+- A long player name no longer breaks the timestamp. The name and the time share one line, and the name could
+  take all of it, so "02:55" wrapped onto two lines inside a row 58 pixels tall. The name is cut with an
+  ellipsis instead and the time is never squeezed. The conversation header clamps the same way.
+
 ## [1.0.1] - 2026-07-27
 
 ### Fixed
