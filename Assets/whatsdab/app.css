@@ -195,14 +195,23 @@ body {
   justify-content: space-between;
 }
 
+/* The name takes what is left and gets cut, the timestamp never does. Without this a long name pushes the
+   time down to its own minimum and "02:55" breaks across two lines inside a row that is 58px tall. */
 .thread-name {
+  flex: 1;
+  min-width: 0;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .thread-time {
+  flex-shrink: 0;
+  padding-left: 8px;
   color: var(--muted);
   font-size: 11px;
+  white-space: nowrap;
 }
 
 .thread-preview {
@@ -256,17 +265,23 @@ body {
   background: var(--header);
 }
 
-.who { flex: 1; }
+/* Same trade as a thread row: the header is one line tall, so a long persona name is cut rather than
+   allowed to wrap and push the subtitle out of the bar. */
+.who { flex: 1; min-width: 0; }
 
 .who-name {
   color: #FFFFFF;
   font-size: 15px;
   font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .who-sub {
   color: #B6D6D0;
   font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .messages {
