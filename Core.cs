@@ -2,8 +2,14 @@ using MelonLoader;
 using Sideload.Api;
 using WhatsDab.Chat;
 
-[assembly: MelonInfo(typeof(WhatsDab.Core), "WhatsDab", "1.0.2", "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab")]
+[assembly: MelonInfo(typeof(WhatsDab.Core), "WhatsDab", DooDesch.ModVersion.Current, "DooDesch", "https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab")]
 [assembly: MelonGame("TVGS", "Schedule I")]
+// The Sideload.Api shim is compiled into this mod and finds its host by reflection, so nothing here REFERENCES
+// Sideload.dll. Declaring it anyway is what makes the link visible from the outside: MelonLoader loads Sideload
+// first, and Side Hustle's mod-policy dependency walk (which reads these attributes because assembly references
+// tell it nothing) ships Sideload.dll to joiners and re-enables it in a "required mods only" profile. Optional,
+// not additional - without Sideload this mod must still load and quietly do nothing, as documented below.
+[assembly: MelonOptionalDependencies("Sideload")]
 
 namespace WhatsDab
 {

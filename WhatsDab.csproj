@@ -41,6 +41,12 @@
     <Compile Remove="Workspace/**/*.cs" />
   </ItemGroup>
 
+  <!-- Generates DooDesch.ModVersion.Current from this project's own version property, so MelonInfo carries the
+       released version and cannot drift out of it. MUST come after the Workspace Remove so CI keeps the file. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Workspace/build/ModVersion.props" Condition="Exists('$(MSBuildThisFileDirectory)../Workspace/build/ModVersion.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)Workspace/build/ModVersion.props" Condition="Exists('$(MSBuildThisFileDirectory)Workspace/build/ModVersion.props')" />
+
+
   <ItemGroup>
     <Reference Include="MelonLoader">
       <HintPath>$(WorkspaceLibPath)/il2cpp/melonloader/MelonLoader.dll</HintPath>
@@ -95,11 +101,14 @@
        Two locations for the same file. In the development monorepo the Sideload.Api project sits next to this one
        and is the single source of truth. A standalone checkout of this repo (and therefore CI) has no sibling, so
        it falls back to the copy that ships in the private build-libs repo under lib/sideload-api/. -->
+  <PropertyGroup>
+    <SideloadShimPath Condition="Exists('$(MSBuildThisFileDirectory)../Sideload/Sideload.Api/Sideload.cs')">$(MSBuildThisFileDirectory)../Sideload/Sideload.Api/Sideload.cs</SideloadShimPath>
+    <SideloadShimPath Condition="'$(SideloadShimPath)' == '' And Exists('$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs')">$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs</SideloadShimPath>
+    <SideloadShimPath Condition="'$(SideloadShimPath)' == '' And Exists('$(WorkspaceLibPath)/sideload-api/Sideload.cs')">$(WorkspaceLibPath)/sideload-api/Sideload.cs</SideloadShimPath>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Condition="Exists('$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs')"
-             Include="$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs" Link="Sideload.Api.cs" />
-    <Compile Condition="!Exists('$(MSBuildThisFileDirectory)../Sideload.Api/Sideload.cs') And Exists('$(WorkspaceLibPath)/sideload-api/Sideload.cs')"
-             Include="$(WorkspaceLibPath)/sideload-api/Sideload.cs" Link="Sideload.Api.cs" />
+    <Compile Condition="'$(SideloadShimPath)' != ''" Include="$(SideloadShimPath)" Link="Sideload.Api.cs" />
   </ItemGroup>
 
   <!-- The web bundle. The logical names decide the prefix passed to Apps.Register.
