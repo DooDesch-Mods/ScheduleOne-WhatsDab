@@ -9,7 +9,7 @@
 > the whole interface is three web files rather than hand-built panels, and the mod's own C# is one
 > `Apps.Register` call plus the chat itself.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.2-blue)
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
