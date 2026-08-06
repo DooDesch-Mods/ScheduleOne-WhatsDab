@@ -3,6 +3,16 @@
 All notable changes to WhatsDab are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] - 2026-08-07
+
+### Fixed
+
+- Spamming the chat no longer freezes the game. Every message rebuilt the whole app, and a conversation was kept
+  without end, so each rebuild cost more than the last. Redraws are collapsed into one per burst and a thread keeps
+  its most recent 200 messages.
+- The unread badge counts again. A thread you had open marked itself read whenever a message arrived, phone in your
+  pocket or not - so nothing was ever unread.
+
 ## [1.0.4] - 2026-08-07
 
 ### Fixed

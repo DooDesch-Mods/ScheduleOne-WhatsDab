@@ -20,6 +20,10 @@ const initial = (name) => (name?.trim()?.[0] ?? '?').toUpperCase();
 /** The one conversation that is always there, whoever else is in the lobby. */
 const GROUP = 'everyone';
 
+/** How long a burst of changes is allowed to collapse into one redraw. Long enough that a spammed thread costs one
+ *  rebuild instead of one per message, short enough that a normal reply still feels immediate. */
+const RENDER_COALESCE_MS = 120;
+
 /**
  * Shorten a name that would otherwise decide how wide a bubble is. A bubble is sized by its widest line, so an
  * unusually long persona name above a two-word message stretches the bubble across the conversation for no reason.
@@ -100,6 +104,7 @@ class WhatsDab {
    * all changed - a search keystroke, an unread badge, someone starting to type in a different thread.
    */
   #pinned = null;
+  #renderPending = false;
 
   #app = $('app');
   #threads = $('threads');
@@ -142,7 +147,10 @@ class WhatsDab {
     });
 
     // Raised by the mod whenever anything changed: a reply arrived, a message was confirmed, someone started typing.
-    s1.on('chat.changed', () => this.render());
+    // Coalesced, because "anything changed" can arrive several times a second: two people spamming the group thread
+    // meant a full page rebuild per message, and a rebuild is HTML, CSS and layout for the whole app. The game froze
+    // for as long as the burst lasted. One redraw per burst shows exactly the same end state.
+    s1.on('chat.changed', () => this.#renderSoon());
 
     this.#show(this.#pane);
     this.render();
@@ -168,6 +176,13 @@ class WhatsDab {
    * WhatsDab drew the same line - a message that arrives while you are looking at the thread list is unread.
    */
   #watching() { return !this.#offline && (s1.orientation !== 'portrait' || this.#pane === 'chat'); }
+
+  /** Redraw once, shortly, however many changes arrive in the meantime. */
+  #renderSoon() {
+    if (this.#renderPending) return;
+    this.#renderPending = true;
+    setTimeout(() => { this.#renderPending = false; this.render(); }, RENDER_COALESCE_MS);
+  }
 
   render() {
     const { online, peers } = this.#chat.status;
