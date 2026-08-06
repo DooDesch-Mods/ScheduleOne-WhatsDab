@@ -3,6 +3,14 @@
 All notable changes to WhatsDab are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] - 2026-08-06
+
+### Fixed
+
+- Messages send again. WhatsDab read the lobby id from a game property that Schedule I stopped filling in 0.4.6,
+  so every message was dropped before it left your machine - no error, no hint in the app. It now reads the id
+  from where the game keeps it since that update.
+
 ## [1.0.2] - 2026-07-28
 
 ### Fixed
