@@ -99,6 +99,11 @@ namespace WhatsDab.Lobby
 
         internal static bool InLobby => CurrentLobby() != 0UL;
 
+        /// <summary>The lobby everything in this mod must agree on. Public because LobbySource used to run its own
+        /// copy of the lookup - and kept the broken one after this file was fixed, which left the contact list empty
+        /// and took every private conversation with it while the group chat worked.</summary>
+        internal static ulong LobbyId => CurrentLobby();
+
         /// <summary>Send a message (recipient 0 = group). Returns the seq used, or -1 when it could not send.</summary>
         internal static int Send(ulong recipientId, int seq, string text)
         {

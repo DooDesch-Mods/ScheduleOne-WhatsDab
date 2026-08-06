@@ -85,7 +85,10 @@ namespace WhatsDab.Lobby
 
         public void Tick()
         {
-            ulong lobby = ChatTransport.InLobby ? CurrentLobby() : 0UL;
+            // ONE lookup for the whole mod (ChatTransport.LobbyId). This line used to call a local copy that read the
+            // dead Lobby.LobbyID property, so it always saw 0, returned early, and never refreshed the member list -
+            // no contacts, therefore no private threads, while the group chat was fine.
+            ulong lobby = ChatTransport.LobbyId;
 
             // Leaving a lobby has to empty the store. Carrying a previous lobby's conversation into the next one
             // would show the player messages from people who are no longer there.
@@ -105,16 +108,6 @@ namespace WhatsDab.Lobby
 
             _nextRefresh = ContactRefreshSeconds;
             Contacts.Refresh(lobby);
-        }
-
-        private static ulong CurrentLobby()
-        {
-            try
-            {
-                var lobby = Il2CppScheduleOne.DevUtilities.PersistentSingleton<Il2CppScheduleOne.Networking.Lobby>.Instance;
-                return lobby != null && lobby.IsInLobby ? lobby.LobbyID : 0UL;
-            }
-            catch { return 0UL; }
         }
 
         /// <summary>
