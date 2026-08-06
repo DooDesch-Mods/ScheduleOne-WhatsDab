@@ -3,6 +3,14 @@
 All notable changes to WhatsDab are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] - 2026-08-07
+
+### Fixed
+
+- One-to-one chats are back. The member list was never rebuilt, so there was nobody to write to and only the group
+  thread worked. 1.0.3 fixed the same broken lobby lookup in the transport and missed a second copy of it here.
+- A message cut at the 500 character limit can no longer be cut through the middle of an emoji.
+
 ## [1.0.3] - 2026-08-06
 
 ### Fixed

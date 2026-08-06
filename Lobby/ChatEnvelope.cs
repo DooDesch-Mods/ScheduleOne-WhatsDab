@@ -33,7 +33,14 @@ namespace WhatsDab.Lobby
         internal static byte[] Encode(ulong recipientId, int seq, long unix, string text)
         {
             string t = text ?? "";
-            if (t.Length > MaxTextChars) t = t.Substring(0, MaxTextChars);
+            if (t.Length > MaxTextChars)
+            {
+                int cut = MaxTextChars;
+                // Never cut between the halves of a surrogate pair (an emoji): the lone half is not valid UTF-16 and
+                // encodes to a replacement character, which is a visible corruption of someone's message.
+                if (char.IsHighSurrogate(t[cut - 1])) cut--;
+                t = t.Substring(0, cut);
+            }
             string recipient = recipientId == 0 ? "*" : recipientId.ToString();
             string b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(t));
             string envelope = Prefix + recipient + "|" + seq + "|" + unix + "|" + b64 + "\0";

@@ -1,6 +1,6 @@
 {
   "name": "WhatsDab",
-  "version_number": "1.0.3",
+  "version_number": "1.0.4",
   "website_url": "https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab",
   "description": "Text the people in your lobby from the in game phone. Threads, unread counts, group and one to one chat, in both orientations. Needs Sideload.",
   "dependencies": [
