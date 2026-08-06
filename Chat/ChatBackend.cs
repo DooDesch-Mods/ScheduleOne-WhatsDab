@@ -46,7 +46,11 @@ namespace WhatsDab.Chat
             app.OnCall("chat.threads", _ => Threads())
                .OnCall("chat.thread", Conversation)
                .OnCall("chat.send", Send)
-               .OnCall("chat.read", id => { _source.MarkRead(id); return "ok"; })
+               // Reading requires LOOKING. The page asks on every redraw of an open thread, and a redraw happens
+               // whenever a message arrives - including with the phone in a pocket, because the page stays alive.
+               // So every incoming message marked itself read on arrival and the badge never counted past zero.
+               // IsOnScreen is the one thing the page cannot know for itself.
+               .OnCall("chat.read", id => { if (_app == null || _app.IsOnScreen) _source.MarkRead(id); return "ok"; })
                .OnCall("chat.self", _ => _source.Self)
                .OnCall("chat.status", _ => Status());
         }

@@ -115,9 +115,18 @@ namespace WhatsDab.Lobby
         }
 #endif
 
+        /// <summary>
+        /// How much of a conversation is kept. A thread that grows without end makes every redraw more expensive than
+        /// the last one - the page rebuilds the open thread from the whole list - so a spammer degrades the game for
+        /// everyone in the lobby, not just for themselves. Two hundred is far more than anyone scrolls back through in
+        /// a session, and the oldest lines go first.
+        /// </summary>
+        private const int MaxMessagesPerThread = 200;
+
         private static List<ChatMessage> List(ulong key)
         {
             if (!_threads.TryGetValue(key, out var list)) { list = new List<ChatMessage>(); _threads[key] = list; }
+            if (list.Count > MaxMessagesPerThread) list.RemoveRange(0, list.Count - MaxMessagesPerThread);
             return list;
         }
     }
