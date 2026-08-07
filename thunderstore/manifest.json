@@ -5,7 +5,7 @@
   "description": "Text the people in your lobby from the in game phone. Threads, unread counts, group and one to one chat, in both orientations. Needs Sideload.",
   "dependencies": [
     "LavaGang-MelonLoader-0.7.3",
-    "DooDesch-Sideload-1.7.0"
+    "DooDesch-Sideload-1.10.0"
   ],
   "contributors": [
     "DooDesch"

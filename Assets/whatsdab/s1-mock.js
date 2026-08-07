@@ -166,6 +166,10 @@
   window.s1mock = {
     setOnline(value) { online = !!value; changed(); },
     emptyLobby() { threads.length = 1; changed(); },
+
+    // What Enter does in the game: the mod raises the phone and names the thread to land in. There is no phone to
+    // raise here, so the preview delivers the second half - which is the half the page owns and can get wrong.
+    compose(id = 'everyone') { (listeners['chat.compose'] ?? []).forEach((fn) => fn(id)); },
   };
 
   // The one DOM method the host adds and a browser does not have.

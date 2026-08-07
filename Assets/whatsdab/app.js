@@ -152,6 +152,11 @@ class WhatsDab {
     // for as long as the burst lasted. One redraw per burst shows exactly the same end state.
     s1.on('chat.changed', () => this.#renderSoon());
 
+    // The player pressed Enter with the phone away and the mod brought WhatsDab up. The mod names the thread to
+    // land in rather than letting this side assume the group: which conversation Enter means is a question about
+    // the lobby, and only the mod can see one.
+    s1.on('chat.compose', (id) => this.#compose(id));
+
     this.#show(this.#pane);
     this.render();
     console.log('WhatsDab ready for', this.#chat.self, 'in', s1.orientation);
@@ -359,6 +364,21 @@ class WhatsDab {
     this.#chat.read(id);
     this.#show('chat');
     this.render();
+  }
+
+  /**
+   * Land in a conversation ready to write in it. What Enter has to mean: opening the app and leaving the player to
+   * click a row and then the box is three actions for something that was supposed to be one key.
+   *
+   * The offline screen has no compose box on it, so there is nothing to focus and nothing to open - the mod already
+   * declines the key in that case, and this is the second half of the same rule, for the lobby that ends between the
+   * press and the render.
+   */
+  #compose(id) {
+    if (this.#offline) return;
+
+    this.#open(id || GROUP);
+    this.#entry.focus();
   }
 
   #send() {

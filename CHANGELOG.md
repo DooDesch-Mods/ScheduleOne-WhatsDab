@@ -3,6 +3,19 @@
 All notable changes to WhatsDab are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-08-07
+
+### Added
+
+- Press Enter and WhatsDab opens on the Everyone chat with the cursor already in the message box, so
+  the next thing you type is the message. Your phone does not have to be out.
+- With a conversation on screen, everything you type goes into the message box. It used to walk your
+  character forward, crouch you and swap inventory slots unless you clicked the box first. Escape and
+  right-click still leave, on the first press.
+- Enter still belongs to the game where the game wants it: nothing happens while you are typing,
+  paused, or at a station, a shop or the console, and nothing happens outside a lobby.
+- Needs Sideload 1.10.0. On an older one WhatsDab works as before, just without the key.
+
 ## [1.0.5] - 2026-08-07
 
 ### Fixed
