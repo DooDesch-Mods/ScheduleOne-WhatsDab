@@ -52,7 +52,32 @@ namespace WhatsDab.Chat
                // IsOnScreen is the one thing the page cannot know for itself.
                .OnCall("chat.read", id => { if (_app == null || _app.IsOnScreen) _source.MarkRead(id); return "ok"; })
                .OnCall("chat.self", _ => _source.Self)
-               .OnCall("chat.status", _ => Status());
+               .OnCall("chat.status", _ => Status())
+               // Enter is the whole point of a chat you did not open yet. Sideload only offers it where the player
+               // could have taken their phone out by hand anyway, and hands it to whichever app messaged them last -
+               // so a second messenger installed alongside this one is a question the framework answers, not this
+               // file. See AppHandle.OnKey.
+               .OnKey("Enter", _ => QuickChat());
+        }
+
+        /// <summary>
+        /// The player pressed Enter with the phone away. Bring it out with the group thread open and the caret in the
+        /// compose box, so the next thing they type is the message.
+        ///
+        /// Returns whether the key was TAKEN. Two ways it is not: there is no lobby, so there is nobody to write to
+        /// and an app saying "nobody to message yet" is not worth a phone appearing; or the game refused the phone.
+        /// Either way the press falls through to whatever else asked for Enter instead of being swallowed here.
+        /// </summary>
+        internal static bool QuickChat()
+        {
+            if (_app == null || _source == null || !_source.Online) return false;
+            if (!_app.Show()) return false;
+
+            // AFTER Show(), and that order is the whole reason this is not two lines at the call site: the page is
+            // built the first time the app is opened, and a page that does not exist yet has nothing subscribed to
+            // this event. Show() builds it synchronously, so by here the listener is there.
+            _app.Emit("chat.compose", ChatModel.GroupId);
+            return true;
         }
 
         /// <summary>Called once a frame by the mod. Advances the source and tells the page when to refresh - on a

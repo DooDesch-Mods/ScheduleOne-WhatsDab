@@ -9,7 +9,7 @@
 > the whole interface is three web files rather than hand-built panels, and the mod's own C# is one
 > `Apps.Register` call plus the chat itself.
 
-![Version](https://img.shields.io/badge/version-1.0.2-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
@@ -36,6 +36,18 @@ portrait)` block in `app.css`, not a second layout.
 
 Right-click goes back the way it does everywhere else on the phone: out of a conversation first, and only
 from the list does it close the app.
+
+With a conversation on screen the keyboard belongs to the message box, so you can just type. Before that,
+every letter was still a game binding: "hello" walked you forward, crouched you and swapped two inventory
+slots unless you clicked the box first. Escape and right-click still leave, on the first press. Click the
+search field and it keeps the keyboard for as long as you are searching.
+
+Press **Enter** and WhatsDab opens on the Everyone chat with the cursor already in the message box, phone in
+your pocket or not - so answering somebody is one key rather than a phone, a home screen, an app and a
+click. Enter still belongs to the game where the game wants it: nothing happens while you are typing,
+paused, or at a station, a shop or the console, and nothing happens outside a lobby. Sideload owns the key
+and turns it off in one place (`AppKeys` in `MelonPreferences.cfg`); with a second messenger installed it
+hands Enter to whichever app messaged you last.
 
 Conversations live in memory for the session and are deliberately never written to disk: a chat log on
 someone's drive is not what people expect from a lobby chat, and the name shown is whatever a player already
@@ -116,7 +128,7 @@ stack.
 |-----------|------------------|
 | Schedule I | IL2CPP (current Steam public build) |
 | MelonLoader | `0.7.3+` |
-| [Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload) | `1.0.1+` - the framework that renders the app |
+| [Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload) | `1.10.0+` - the framework that renders the app, and the source of the Enter key |
 
 ## Installation
 
@@ -134,8 +146,8 @@ pulled in automatically.
 
 ## Configuration
 
-None. This mod registers no MelonPreferences entries and has nothing to tune. Sideload's own developer
-settings live under `Sideload_01_Main`; see the
+None. This mod registers no MelonPreferences entries and has nothing to tune. The Enter key is Sideload's,
+and `AppKeys` under `Sideload_01_Main` switches it off along with every other app key; see the
 [Sideload README](https://github.com/DooDesch-Mods/ScheduleOne-Sideload#configuration).
 
 ## Editing the app without rebuilding

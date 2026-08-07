@@ -43,7 +43,10 @@
     <div class="messages" id="messages"></div>
 
     <div class="compose">
-      <input class="entry" id="entry" placeholder="Write a message" maxlength="500">
+      <!-- data-typing: while the conversation is on screen the keyboard belongs to this box. Without it, somebody
+           looking at a chat and starting to type walks forward, crouches and swaps two inventory slots - every
+           letter is a game binding until a field holds the caret, and nobody opens a chat meaning to do that. -->
+      <input class="entry" id="entry" data-typing placeholder="Write a message" maxlength="500">
       <button class="send" id="send">Send</button>
     </div>
   </main>
