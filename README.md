@@ -15,7 +15,7 @@
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
 ![Multiplayer](https://img.shields.io/badge/multiplayer-co--op-blue)
 
-**[Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload)** · **[Wiki / docs](https://github.com/DooDesch-Mods/ScheduleOne-Sideload/wiki)** · **[Support](https://support.doodesch.de/whatsdab)**
+**[Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload)** · **[Documentation](https://docs.doodesch.de/mods/sideload/)** · **[Support](https://support.doodesch.de/whatsdab)**
 
 ## What you get
 
