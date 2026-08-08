@@ -340,6 +340,28 @@ function run(src, opts, dom, s1) {
 // children are ALL inline tags is a flex container with one item per child, and stacks them in a column. There is
 // no selector for "my parent has a text node", so the compatibility stylesheet cannot express it and this does.
 function checkDivergence(dom) {
+  say(dom, inlineOnlyParents(dom),
+      'hold only inline children and no text of their own. Here they sit on one line; the game gives each child',
+      'its own flex item and stacks them in a column. Add a word of text, or set the direction the element really',
+      'wants (Sideload/Dom/DomBuilder.cs IsInlineOnly):');
+
+  say(dom, falseScrollBoxes(dom),
+      'match the stylesheet\'s scroll-container names but set no overflow, so they were handed back the',
+      '`flex-shrink` the base rule takes away and can now be squeezed here while the game holds them at their',
+      'content. Rename them, or write `flex-shrink: 0` on them:');
+}
+
+function say(dom, hits, ...lines) {
+  if (!hits.length) return;
+  dom.findings.hidden = false;
+  dom.findings.textContent += `${hits.length} element(s) ` + lines.join('\n') + '\n'
+                            + hits.slice(0, 12).map((h) => '    ' + h).join('\n') + '\n';
+}
+
+// The engine folds an element into one line of text only when it has DIRECT TEXT of its own; an element whose
+// children are ALL inline tags is a flex container with one item per child, and stacks them in a column. There is
+// no selector for "my parent has a text node", so the stylesheet cannot express it and this does.
+function inlineOnlyParents(dom) {
   const INLINE = new Set(['SPAN', 'B', 'STRONG', 'I', 'EM', 'U', 'SMALL', 'CODE', 'A', 'BR']);
   const hits = [];
 
@@ -352,14 +374,29 @@ function checkDivergence(dom) {
 
     hits.push(describe(el));
   }
+  return hits;
+}
 
-  if (!hits.length) return;
-  dom.findings.hidden = false;
-  dom.findings.textContent +=
-    `${hits.length} element(s) hold only inline children and no text of their own. Here they sit on one line; the\n`
-    + `game gives each child its own flex item and stacks them in a column. Add a word of text, or set the\n`
-    + `direction the element really wants (Sideload/Dom/DomBuilder.cs IsInlineOnly):\n`
-    + hits.slice(0, 12).map((h) => '    ' + h).join('\n') + '\n';
+// A scroll container is the one box the engine shrinks below its content, so the stylesheet gives it back the
+// `flex-shrink` the base rule takes away. CSS cannot ask "does this element have overflow set", only whether it
+// says so inline, so the rest of that selector is a naming convention - and a convention is a guess until somebody
+// checks it. Here the computed style knows, so it is checked rather than trusted.
+function falseScrollBoxes(dom) {
+  // Only a browser can answer this. The headless DOM the smoke test runs against has no CSS engine, so there the
+  // check is skipped rather than answered wrongly.
+  if (typeof getComputedStyle !== 'function') return [];
+
+  const hits = [];
+
+  for (const el of dom.viewport.querySelectorAll('.scroll, .rows, .messages, .list')) {
+    if (el.getAttribute('style')?.includes('overflow')) continue;
+
+    const style = getComputedStyle(el);
+    if (style.overflowY !== 'visible' || style.overflowX !== 'visible') continue;
+
+    hits.push(describe(el));
+  }
+  return hits;
 }
 
 const describe = (el) =>
