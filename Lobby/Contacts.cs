@@ -54,7 +54,7 @@ namespace WhatsDab.Lobby
                     _list.Add(new Contact { SteamId = m.m_SteamID, Name = ResolveName(m.m_SteamID) });
                 }
             }
-            catch (Exception e) { Core.Log?.Warning("[WhatsDab] contact refresh failed: " + e.Message); }
+            catch (Exception e) { Core.Log?.Warning("contact refresh failed: " + e.Message); }
         }
 
         private static string ResolveName(ulong steamId)

@@ -57,7 +57,7 @@ namespace WhatsDab
         private static IChatSource ChooseSource()
         {
 #if DEBUG
-            Log.Msg("[WhatsDab] development build - using the scripted demo conversation, not the lobby.");
+            Log.Msg("development build - using the scripted demo conversation, not the lobby.");
             return new DemoSource();
 #else
             return new Lobby.LobbySource();

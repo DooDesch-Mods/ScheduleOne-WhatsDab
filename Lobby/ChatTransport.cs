@@ -30,7 +30,7 @@ namespace WhatsDab.Lobby
             _onMessage = onMessage;
             if (_callback != null) return;
             try { _callback = Callback<LobbyChatMsg_t>.Create((Callback<LobbyChatMsg_t>.DispatchDelegate)OnChatMsg); }
-            catch (Exception e) { Core.Log?.Error("[WhatsDab] chat callback registration failed: " + e); }
+            catch (Exception e) { Core.Log?.Error("chat callback registration failed: " + e); }
             // Our own record of which lobby we are in, so the transport does not depend on any single vanilla member
             // staying alive across game updates - which is exactly how it broke once (see CurrentLobby).
             try
@@ -38,7 +38,7 @@ namespace WhatsDab.Lobby
                 _enterCallback = Callback<LobbyEnter_t>.Create((Callback<LobbyEnter_t>.DispatchDelegate)OnLobbyEnter);
                 _createdCallback = Callback<LobbyCreated_t>.Create((Callback<LobbyCreated_t>.DispatchDelegate)OnLobbyCreated);
             }
-            catch (Exception e) { Core.Log?.Warning("[WhatsDab] lobby callbacks failed: " + e.Message); }
+            catch (Exception e) { Core.Log?.Warning("lobby callbacks failed: " + e.Message); }
         }
 
         private static void OnLobbyEnter(LobbyEnter_t e)
@@ -75,7 +75,7 @@ namespace WhatsDab.Lobby
             if (_seenLobby != 0UL && !_loggedDeadProperty)
             {
                 _loggedDeadProperty = true;
-                Core.Log?.Warning("[WhatsDab] the game's lobby service gave no id; using our own record " + _seenLobby +
+                Core.Log?.Warning("the game's lobby service gave no id; using our own record " + _seenLobby +
                                   " (SteamLobbyService may have changed again).");
             }
             return _seenLobby;
@@ -119,7 +119,7 @@ namespace WhatsDab.Lobby
                 bool ok = SteamMatchmaking.SendLobbyChatMsg(new CSteamID(lobby), bytes, bytes.Length);
                 return ok ? seq : -1;
             }
-            catch (Exception e) { Core.Log?.Warning("[WhatsDab] send failed: " + e.Message); return -1; }
+            catch (Exception e) { Core.Log?.Warning("send failed: " + e.Message); return -1; }
         }
 
         private static void OnChatMsg(LobbyChatMsg_t msg)
@@ -145,7 +145,7 @@ namespace WhatsDab.Lobby
                 if (decoded.RecipientId != 0UL && decoded.RecipientId != SelfId() && decoded.SenderId != SelfId()) return;
                 _onMessage?.Invoke(decoded);
             }
-            catch (Exception e) { Core.Log?.Warning("[WhatsDab] receive failed: " + e.Message); }
+            catch (Exception e) { Core.Log?.Warning("receive failed: " + e.Message); }
         }
     }
 }
