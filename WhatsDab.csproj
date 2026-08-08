@@ -112,10 +112,11 @@
   </ItemGroup>
 
   <!-- The web bundle. The logical names decide the prefix passed to Apps.Register.
-       preview.html and s1-mock.js are authoring tools, not part of the app: they let the same files run in Chrome
-       without a game launch, and shipping them inside the DLL would be dead weight. -->
+       preview.html, s1-mock.js and the shared preview shell (sideload-preview.*, dom-surface.js) are authoring
+       tools, not part of the app: they let the same files run in Chrome without a game launch, and shipping them
+       inside the DLL would be dead weight the renderer would then have to skip past in the bundle. -->
   <ItemGroup>
-    <EmbeddedResource Include="Assets/whatsdab/*" Exclude="Assets/whatsdab/preview.html;Assets/whatsdab/s1-mock.js">
+    <EmbeddedResource Include="Assets/whatsdab/*" Exclude="Assets/whatsdab/preview.html;Assets/whatsdab/s1-mock.js;Assets/whatsdab/sideload-preview.*;Assets/whatsdab/dom-surface.js">
       <LogicalName>WhatsDab.Assets.whatsdab.%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
