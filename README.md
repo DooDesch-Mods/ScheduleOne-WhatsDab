@@ -14,6 +14,7 @@
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
 ![Multiplayer](https://img.shields.io/badge/multiplayer-co--op-blue)
+[![Polyfill](https://polyfill.doomods.com/badge/whatsdab.svg)](https://polyfill.doomods.com/mod/whatsdab)
 
 **[Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload)** · **[Documentation](https://docs.doodesch.de/mods/sideload/)** · **[Support](https://support.doodesch.de/whatsdab)**
 
