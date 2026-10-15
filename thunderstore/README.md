@@ -11,6 +11,7 @@
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
+[![Polyfill](https://polyfill.doomods.com/badge/whatsdab.svg)](https://polyfill.doomods.com/mod/whatsdab)
 
 [![MLVScan WhatsDab.dll](https://mlvscan.com/attestations/att_gHZQUXH6NSZSxgWupVf5H9GA/badge.svg)](https://mlvscan.com/attestations/att_gHZQUXH6NSZSxgWupVf5H9GA)
 
