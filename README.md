@@ -4,8 +4,6 @@
 
 **Download:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2361) · [Thunderstore](https://thunderstore.io/c/schedule-i/p/DooDesch/WhatsDab/) · [GitHub Releases](https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab/releases)
 
-[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
-
 > Text the people in your lobby from the phone you already carry. Threads, unread counts, group chat and
 > one-to-one, in both orientations.
 >
@@ -18,7 +16,7 @@
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
 ![Multiplayer](https://img.shields.io/badge/multiplayer-co--op-blue)
-[![Polyfill](https://polyfill.doomods.com/badge/whatsdab.svg)](https://polyfill.doomods.com/mod/whatsdab)
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de) [![Polyfill](https://polyfill.doomods.com/badge/whatsdab.svg)](https://polyfill.doomods.com/mod/whatsdab)
 
 [![MLVScan WhatsDab.dll](https://mlvscan.com/attestations/att_gHZQUXH6NSZSxgWupVf5H9GA/badge.svg)](https://mlvscan.com/attestations/att_gHZQUXH6NSZSxgWupVf5H9GA)
 
