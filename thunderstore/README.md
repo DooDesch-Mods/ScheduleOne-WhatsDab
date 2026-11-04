@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/whatsdab](https://support.doodesch.de/whatsdab).
 
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
+
 > **Text the people in your lobby from the phone you already carry.** Threads, unread counts, group and one
 > to one chat, in both orientations. Written as three web files on
 > [Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/), which is also the mod to read if you
@@ -61,6 +63,12 @@ Guide, the exact CSS subset and the layout rules that differ from a browser:
 ## Settings
 
 None. This mod has nothing to configure.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.svg)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
 
 ## License
 

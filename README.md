@@ -4,6 +4,8 @@
 
 **Download:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2361) · [Thunderstore](https://thunderstore.io/c/schedule-i/p/DooDesch/WhatsDab/) · [GitHub Releases](https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab/releases)
 
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
+
 > Text the people in your lobby from the phone you already carry. Threads, unread counts, group chat and
 > one-to-one, in both orientations.
 >
@@ -177,6 +179,12 @@ is also the mechanism players use to reskin an app.
   players without it are unaffected.
 - Without Sideload installed the shim binds nothing, every call is a no op and the mod simply does nothing
   rather than throwing.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.svg)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
 
 ## Credits
 
