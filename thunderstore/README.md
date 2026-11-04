@@ -2,8 +2,6 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/whatsdab](https://support.doodesch.de/whatsdab).
 
-[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
-
 > **Text the people in your lobby from the phone you already carry.** Threads, unread counts, group and one
 > to one chat, in both orientations. Written as three web files on
 > [Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/), which is also the mod to read if you
@@ -13,7 +11,7 @@
 ![Game](https://img.shields.io/badge/game-Schedule%20I-purple)
 ![MelonLoader](https://img.shields.io/badge/MelonLoader-0.7.3+-green)
 ![Sideload](https://img.shields.io/badge/Sideload-required-orange)
-[![Polyfill](https://polyfill.doomods.com/badge/whatsdab.svg)](https://polyfill.doomods.com/mod/whatsdab)
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de) [![Polyfill](https://polyfill.doomods.com/badge/whatsdab.svg)](https://polyfill.doomods.com/mod/whatsdab)
 
 [![MLVScan WhatsDab.dll](https://mlvscan.com/attestations/att_gHZQUXH6NSZSxgWupVf5H9GA/badge.svg)](https://mlvscan.com/attestations/att_gHZQUXH6NSZSxgWupVf5H9GA)
 
