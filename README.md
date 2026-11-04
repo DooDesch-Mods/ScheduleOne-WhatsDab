@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/whatsdab](https://support.doodesch.de/whatsdab).
 
+**Download:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2361) · [Thunderstore](https://thunderstore.io/c/schedule-i/p/DooDesch/WhatsDab/) · [GitHub Releases](https://github.com/DooDesch-Mods/ScheduleOne-WhatsDab/releases)
+
 > Text the people in your lobby from the phone you already carry. Threads, unread counts, group chat and
 > one-to-one, in both orientations.
 >
@@ -131,19 +133,26 @@ stack.
 |-----------|------------------|
 | Schedule I | IL2CPP (current Steam public build) |
 | MelonLoader | `0.7.3+` |
-| [Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload) | `1.10.0+` - the framework that renders the app, and the source of the Enter key |
+| [Sideload](https://www.nexusmods.com/schedule1/mods/2360) | `1.10.0+` - the framework that renders the app, and the source of the Enter key |
 
 ## Installation
 
-### Recommended: a Thunderstore mod manager
+### Recommended: Nexus Mods
+
+1. Install **MelonLoader 0.7.3** for Schedule I ([melonwiki.xyz](https://melonwiki.xyz/)).
+2. Download WhatsDab from [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2361) and install it with Vortex,
+   or put **`WhatsDab.dll`** into your Schedule I `Mods/` folder.
+3. Get [Sideload](https://www.nexusmods.com/schedule1/mods/2360) the same way.
+
+### Thunderstore mod manager
 
 Install with a mod manager (r2modman / Gale) from the Schedule I community; MelonLoader and Sideload are
-pulled in automatically.
+pulled in automatically. Find it on the [Thunderstore page](https://thunderstore.io/c/schedule-i/p/DooDesch/WhatsDab/).
 
 ### Manual
 
 1. Install **MelonLoader 0.7.3** for Schedule I.
-2. Install **[Sideload](https://github.com/DooDesch-Mods/ScheduleOne-Sideload)** and its support libraries.
+2. Install **[Sideload](https://www.nexusmods.com/schedule1/mods/2360)** and its support libraries.
 3. Drop **`WhatsDab.dll`** into your Schedule I `Mods/` folder.
 4. Open the phone in game. WhatsDab is on the home screen.
 
