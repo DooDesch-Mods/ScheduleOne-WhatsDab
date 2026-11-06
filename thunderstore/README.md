@@ -2,6 +2,10 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/whatsdab](https://support.doodesch.de/whatsdab).
 
+> ⚠️ **A required mod is missing on Thunderstore?** Thunderstore sometimes takes one of my library mods off its listing, and then r2modman and Gale can't install it. Get it from Nexus Mods or GitHub instead and put the DLL into the `Mods` folder of your profile. Stuck? Ask in the [Discord](https://mods.doodesch.de).
+>
+> - **Sideload:** [Nexus Mods](https://www.nexusmods.com/schedule1/mods/2360) · [GitHub](https://github.com/DooDesch-Mods/ScheduleOne-Sideload/releases/latest)
+
 > **Text the people in your lobby from the phone you already carry.** Threads, unread counts, group and one
 > to one chat, in both orientations. Written as three web files on
 > [Sideload](https://thunderstore.io/c/schedule-i/p/DooDesch/Sideload/), which is also the mod to read if you
